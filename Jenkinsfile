@@ -30,6 +30,21 @@ pipeline {
       }
     }
     
+    stage('Tag & Push Docker Image') {
+      steps {
+        withCredentials([usernamePassword(
+          credentialsId: 'dockerhub-creds',
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
+          sh '''
+            docker tag my-microservice:latest "$DOCKER_USER/my-microservice:latest"
+            docker push "$DOCKER_USER/my-microservice:latest"
+          '''
+        }
+      }
+    }
+    
     stage('Docker Login') {
       steps {
 	withCredentials([usernamePassword(
