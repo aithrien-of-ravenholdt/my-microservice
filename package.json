@@ -1,29 +1,33 @@
 {
-  "name": "node-js-sample",
-  "version": "0.2.0",
-  "description": "A sample Node.js app using Express 4",
+  "name": "my-microservice",
+  "version": "1.0.0",
+  "description": "A Node.js microservice with CI/CD using Jenkins, Docker, and Helm",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "jest"
   },
   "dependencies": {
     "express": "^4.13.3"
   },
   "engines": {
-    "node": "4.0.0"
+    "node": ">=18.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/heroku/node-js-sample"
+    "url": "https://github.com/aithrien-of-ravenholdt/my-microservice"
   },
   "keywords": [
     "node",
-    "heroku",
-    "express"
+    "ci-cd",
+    "jenkins",
+    "docker",
+    "kubernetes",
+    "helm"
   ],
-  "author": "Mark Pundsack",
-  "contributors": [
-    "Zeke Sikelianos <zeke@sikelianos.com> (http://zeke.sikelianos.com)"
-  ],
-  "license": "MIT"
+  "author": "Gabriel Cantero",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
 }
