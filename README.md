@@ -4,6 +4,9 @@
   <img src="https://img.shields.io/badge/Kubernetes-Orchestration-326ce5?logo=kubernetes&logoColor=white" alt="Kubernetes Badge"/>
   <img src="https://img.shields.io/badge/Helm-K8s%20Package%20Manager-0f1689?logo=helm&logoColor=white" alt="Helm Badge"/>
   <img src="https://img.shields.io/badge/Minikube-Local%20Cluster-yellow?logo=minikube&logoColor=black" alt="Minikube Badge"/>
+<a href="https://hub.docker.com/r/aithrien/my-microservice" target="_blank">
+    <img src="https://img.shields.io/badge/DockerHub-View%20Image-blue?logo=docker&logoColor=white" alt="DockerHub Badge"/>
+  </a>
 </p>
 
 ## 🧪 Release Engineering Lab: From CI to Kubernetes
@@ -216,14 +219,26 @@ helm upgrade --install my-microservice ./my-microservice-chart
 minikube service my-microservice-my-microservice-chart
 ```
 
+
+
+---
+
+## 🐳 DockerHub Usage
+
+This image is built and published via CI to DockerHub.
+
+**Pull and run it locally:**
+```bash
+docker pull aithrien/my-microservice:latest
+docker run -p 3000:3000 aithrien/my-microservice
+```
+
+See the published image here:  
+https://hub.docker.com/r/aithrien/my-microservice
+
 ---
 
 ## 📈 Next Steps / Portfolio Extensions
-
-### 🔐 Jenkins Credentials Management
-- Use Jenkins' credentials store for:
-  - DockerHub / GitHub PATs
-  - Private registry credentials
 
 ### 🧪 Test Reports and SonarQube
 - Integrate test reports using `junit` plugin

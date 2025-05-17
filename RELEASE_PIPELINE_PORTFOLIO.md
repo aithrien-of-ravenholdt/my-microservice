@@ -58,11 +58,26 @@ If the response is anything other than `200`, the deployment is considered unhea
 - Health checks verify post-deploy success
 - Auto-rollback keeps the system stable
 
+
+
+---
+
+## 🐳 DockerHub Integration
+
+An automated stage was added to push Docker images to DockerHub from Jenkins using securely stored credentials. This step includes:
+
+- Login to DockerHub using Jenkins' credential store (token-based)
+- Dynamic tagging using the injected DockerHub username
+- Publishing to `aithrien/my-microservice:latest` via `docker push`
+
+The image is publicly available here:
+
+https://hub.docker.com/r/aithrien/my-microservice
+
 ---
 
 ## 📈 Next Improvements
 
-- Push images to DockerHub or GitHub Container Registry (GHCR)
 - Deploy to a real Kubernetes cluster (e.g., EKS, GKE)
 - Integrate unit test reports or static analysis
 - Add Prometheus + Grafana monitoring
