@@ -91,13 +91,13 @@ Jest is configured as the unit testing framework. Each commit triggers a test ru
 
 ### Failure Case Simulation
 
-To demonstrate pipeline robustness, a failure scenario was created by forcing a test to fail:
+A failure scenario was created by forcing a test to fail:
 
 ```js
 expect(true).toBe(false);
 ```
 
-Jenkins executed the test stage, reported the failed result, and preserved the build's full report while continuing the deployment flow (due to `|| true` in the script). This simulates real-world CI behavior where test trends can be used to monitor quality regressions without fully blocking deployment.
+Jenkins executed the test stage, reported the failed result, and preserved the build's full report while continuing the deployment flow (due to `|| true` in the script). This simulates a CI behavior where test trends can be used to monitor quality regressions without fully blocking deployment.
 
 ---
 
