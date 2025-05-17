@@ -18,9 +18,15 @@ pipeline {
       }
     }
 
-    stage('Run tests') {
+    stage('Run Tests') {
       steps {
         sh 'npm test || true'
+      }
+    }
+
+    stage('Publish Test Results') {
+      steps {
+        junit 'test-results/junit.xml'
       }
     }
 
