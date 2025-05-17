@@ -5,7 +5,7 @@ const PORT = process.env.PORT || 3000;
 
 // Root route
 app.get('/', (req, res) => {
-  res.send('Welcome to Gabriel Cantero\'s CI/CD Portfolio App');
+  res.send('Welcome to this containerized CI/CD portfolio app 🚀');
 });
 
 // Health check for probes
