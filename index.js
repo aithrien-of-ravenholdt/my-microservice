@@ -1,12 +1,19 @@
-var express = require('express')
-var app = express()
+const express = require('express');
+const app = express();
 
-app.set('port', (process.env.PORT || 3000))
-app.use(express.static(__dirname + '/public'))
+const PORT = process.env.PORT || 3000;
 
-app.get('/', function(request, response) {
-  response.send('Hello World!')
-})
+// Root route
+app.get('/', (req, res) => {
+  res.send('Welcome to Gabriel Cantero\'s CI/CD Portfolio App');
+});
 
-// webhook test Wed May 14 03:16:57 PM -03 2025
-// force rebuild Wed May 14 04:59:22 PM -03 2025
+// Health check for probes
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
+app.listen(PORT, () => {
+  console.log(`✅ App running on port ${PORT}`);
+});
+ 
