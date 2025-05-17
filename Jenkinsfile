@@ -20,7 +20,10 @@ pipeline {
 
     stage('Run Tests') {
       steps {
-        sh 'npm test || true'
+        sh '''
+          mkdir -p test-results
+          npm test || true
+        '''
       }
     }
 
