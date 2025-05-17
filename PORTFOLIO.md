@@ -8,10 +8,12 @@ This project demonstrates a complete, production-grade CI/CD pipeline built with
 ## 🗂️ Stack Used
 
 - **Node.js** – Sample microservice
+- **Jest** – Unit testing framework with JUnit output
 - **Docker** – Containerize the app
 - **Jenkins** – CI/CD pipeline orchestrator
 - **Helm** – Kubernetes package manager
 - **Minikube** – Local Kubernetes cluster
+- **DockerHub** – Remote container registry for CI-delivered images
 - **kubectl** – K8s command-line tool
 
 ---
@@ -19,12 +21,14 @@ This project demonstrates a complete, production-grade CI/CD pipeline built with
 ## 📦 What This Pipeline Does
 
 1. **Checks out code** from a GitHub repo
-2. **Installs dependencies** and runs tests
-3. **Builds a Docker image**
-4. **Deploys to Kubernetes using Helm**
-5. **Exposes the service using `kubectl port-forward`**
-6. **Performs a live health check via `curl`**
-7. **Rolls back automatically** if the health check fails
+2. **Installs dependencies** and runs tests (Jest)
+3. **Publishes test results** via the JUnit plugin
+4. **Builds a Docker image**
+5. **Pushes the image** to DockerHub securely via Jenkins credentials
+6. **Deploys to Kubernetes using Helm**
+7. **Exposes the service using `kubectl port-forward`**
+8. **Performs a live health check via `curl`**
+9. **Rolls back automatically** if the health check fails
 
 ---
 
@@ -58,8 +62,6 @@ If the response is anything other than `200`, the deployment is considered unhea
 - Health checks verify post-deploy success
 - Auto-rollback keeps the system stable
 
-
-
 ---
 
 ## 🐳 DockerHub Integration
@@ -76,10 +78,33 @@ https://hub.docker.com/r/aithrien/my-microservice
 
 ---
 
+## 🧪 Test Automation and CI Visibility
+
+Jest is configured as the unit testing framework. Each commit triggers a test run within Jenkins, using `jest-junit` to output results into JUnit-compatible XML.
+
+### How Tests Are Handled
+
+- `npm test` is run automatically as part of the pipeline.
+- Results are written to `test-results/junit.xml`.
+- Jenkins uses the `junit` plugin to parse and display the results.
+- A **Test Result Trend** graph is displayed on every build summary page.
+
+### Failure Case Simulation
+
+To demonstrate pipeline robustness, a failure scenario was created by forcing a test to fail:
+
+```js
+expect(true).toBe(false);
+```
+
+Jenkins executed the test stage, reported the failed result, and preserved the build's full report while continuing the deployment flow (due to `|| true` in the script). This simulates real-world CI behavior where test trends can be used to monitor quality regressions without fully blocking deployment.
+
+---
+
 ## 📈 Next Improvements
 
 - Deploy to a real Kubernetes cluster (e.g., EKS, GKE)
-- Integrate unit test reports or static analysis
+- Integrate static analysis
 - Add Prometheus + Grafana monitoring
 - Use Helm secrets and Kubernetes `Secrets` for secure configs
 - Add image scanning with Trivy

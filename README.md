@@ -4,6 +4,7 @@
   <img src="https://img.shields.io/badge/Kubernetes-Orchestration-326ce5?logo=kubernetes&logoColor=white" alt="Kubernetes Badge"/>
   <img src="https://img.shields.io/badge/Helm-K8s%20Package%20Manager-0f1689?logo=helm&logoColor=white" alt="Helm Badge"/>
   <img src="https://img.shields.io/badge/Minikube-Local%20Cluster-yellow?logo=minikube&logoColor=black" alt="Minikube Badge"/>
+<img src="https://img.shields.io/badge/Tests-Passing-brightgreen?logo=jest&logoColor=white" alt="Jest Badge"/>
 <a href="https://hub.docker.com/r/aithrien/my-microservice" target="_blank">
     <img src="https://img.shields.io/badge/DockerHub-View%20Image-blue?logo=docker&logoColor=white" alt="DockerHub Badge"/>
   </a>
@@ -236,12 +237,43 @@ docker run -p 3000:3000 aithrien/my-microservice
 See the published image here:  
 https://hub.docker.com/r/aithrien/my-microservice
 
+
+
+---
+
+
+---
+
+## 🧪 Automated Tests & Reports
+
+Unit tests are written with [Jest](https://jestjs.io/) and automatically executed as part of the CI pipeline.
+
+Jest is configured to output test results in JUnit XML format using `jest-junit`. Jenkins parses this file and renders a historical test trend dashboard.
+
+**How to run tests locally:**
+```bash
+npm test
+```
+
+**Test Result Summary** (via Jenkins):
+- ✅ Successful tests update the "Test Result Trend"
+- ❌ Failed tests do not break the build, but are visualized in the trend graph
+
+Example test file:
+```js
+describe("Health check test", () => {
+  it("returns true", () => {
+    expect(true).toBe(true);
+  });
+});
+```
+
+
 ---
 
 ## 📈 Next Steps / Portfolio Extensions
 
-### 🧪 Test Reports and SonarQube
-- Integrate test reports using `junit` plugin
+### 🧪 Code quality analysis with SonarQube
 - Add SonarQube scanner to pipeline for static analysis
 
 ### ☁️ Push to Remote Registries / Cloud
