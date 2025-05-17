@@ -1,18 +1,24 @@
-# Use official Node.js image
+# Base image
 FROM node:18
 
-# Set working directory
+# Metadata
+LABEL maintainer="Gabriel Cantero"
+LABEL description="CI/CD-ready Node.js microservice"
+
+# Working directory
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Dependency installation
 COPY package*.json ./
 RUN npm install
 
-# Copy rest of the app
-COPY .  .
+# Copy source
+COPY . .
 
-# Expose the port the app runs on
+# Set environment port
+ENV PORT=3000
 EXPOSE 3000
 
-# Start the app
+# Start app
 CMD ["npm", "start"]
+ 
