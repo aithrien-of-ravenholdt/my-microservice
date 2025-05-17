@@ -259,4 +259,4 @@ https://hub.docker.com/r/aithrien/my-microservice
 ---
 
 📄 **Project Summary:**  
-See [RELEASE_PIPELINE_PORTFOLIO.md](./RELEASE_PIPELINE_PORTFOLIO.md) for a full overview of this CI/CD pipeline, rollback strategy, and future roadmap.
+See [PORTFOLIO.md](./PORTFOLIO.md) for a full overview of this CI/CD pipeline, rollback strategy, and future roadmap.
