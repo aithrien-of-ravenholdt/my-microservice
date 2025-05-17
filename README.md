@@ -292,3 +292,10 @@ describe("Health check test", () => {
 
 📄 **Project Summary:**  
 See [PORTFOLIO.md](./PORTFOLIO.md) for a full overview of this CI/CD pipeline, rollback strategy, and future roadmap.
+
+---
+
+## 🧭 Project Origin
+
+This project was originally based on the Heroku Node.js sample app  
+(https://github.com/heroku/node-js-sample) and has since been significantly extended by **Gabriel Cantero** into a modern, end-to-end CI/CD portfolio with its current capabilities. All commits represent custom infrastructure and pipeline engineering work.
