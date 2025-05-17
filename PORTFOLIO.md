@@ -34,7 +34,9 @@ This project demonstrates a complete, production-grade CI/CD pipeline built with
 
 ## 🔁 Rollback Simulation
 
-A simulated failure is introduced in `index.js` to trigger a bad deployment. Jenkins detects the failure and automatically rolls back using:
+A failure scenario is simulated using a failing Jest test to validate CI behavior. This triggers Jenkins to report a failed test result while continuing execution of the remaining stages.
+ 
+Jenkins then evaluates the application’s health post-deployment. If the service fails the live check, it automatically triggers:
 
 ```bash
 helm rollback my-microservice <revision>
