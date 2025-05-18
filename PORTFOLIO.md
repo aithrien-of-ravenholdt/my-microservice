@@ -1,13 +1,15 @@
-
-## 🚀 Release Engineering CI/CD Pipeline with Jenkins, Docker, and Kubernetes
+## 🚀 Release Engineering CI/CD Pipeline: Docker, Jenkins, Helm, Jest & ESLint
 
 This project demonstrates a complete, production-grade CI/CD pipeline built with open-source tools to support the lifecycle of a Node.js microservice — from build and test to containerization, deployment, and automatic rollback.
+
+> 🛠️ Created and maintained by **Gabriel Cantero**
 
 ---
 
 ## 🗂️ Stack Used
 
 - **Node.js** – Sample microservice
+- **ESLint** – Code linting with artifact output
 - **Jest** – Unit testing framework with JUnit output
 - **Docker** – Containerize the app
 - **Jenkins** – CI/CD pipeline orchestrator
@@ -21,14 +23,15 @@ This project demonstrates a complete, production-grade CI/CD pipeline built with
 ## 📦 What This Pipeline Does
 
 1. **Checks out code** from a GitHub repo
-2. **Installs dependencies** and runs tests (Jest)
-3. **Publishes test results** via the JUnit plugin
-4. **Builds a Docker image**
-5. **Pushes the image** to DockerHub securely via Jenkins credentials
-6. **Deploys to Kubernetes using Helm**
-7. **Exposes the service using `kubectl port-forward`**
-8. **Performs a live health check via `curl`**
-9. **Rolls back automatically** if the health check fails
+2. **Lints source files** using ESLint and archives a report
+3. **Installs dependencies** and runs tests (Jest)
+4. **Publishes test results** via the JUnit plugin
+5. **Builds a Docker image**
+6. **Pushes the image** to DockerHub securely via Jenkins credentials
+7. **Deploys to Kubernetes using Helm**
+8. **Exposes the service using `kubectl port-forward`**
+9. **Performs a live health check via `curl`**
+10. **Rolls back automatically** if the health check fails
 
 ---
 
@@ -103,6 +106,25 @@ Jenkins executed the test stage, reported the failed result, and preserved the b
 
 ---
 
+## 🧹 ESLint Quality Gate and Reporting
+
+ESLint is configured in the project using the modern `eslint.config.mjs` format. It checks for syntax errors and basic best practices before test or build stages run.
+
+- Runs with: `npm run lint`
+- Produces a `eslint-report.txt` file on every Jenkins run
+- Report is archived using `archiveArtifacts` and downloadable via the Jenkins UI
+
+### Failure Case Simulation
+
+To simulate a failure, a temporary rule violation was added (e.g., using `console.log` where disallowed).  
+The pipeline stage ran ESLint, logged the failure in the artifact, but continued the pipeline using `|| true`.
+
+This pattern demonstrates:
+- CI visibility without halting critical deploy steps
+- Artifact-based debugging of coding style issues
+
+---
+
 ## 📈 Next Improvements
 
 - Deploy to a real Kubernetes cluster (e.g., EKS, GKE)
@@ -110,9 +132,3 @@ Jenkins executed the test stage, reported the failed result, and preserved the b
 - Add Prometheus + Grafana monitoring
 - Use Helm secrets and Kubernetes `Secrets` for secure configs
 - Add image scanning with Trivy
-
----
-
-## 📄 Author
-
-Built by Gabriel Cantero as part of a hands-on Release Engineering lab.

@@ -168,14 +168,14 @@ npx eslint --init
 
 2. When prompted, select:
 ```
-✔ What do you want to lint? · javascript
-✔ How would you like to use ESLint? · problems
-✔ What type of modules does your project use? · commonjs
-✔ Which framework does your project use? · none
-✔ Does your project use TypeScript? · no
-✔ Where does your code run? · node
-✔ Install the recommended dependencies
-✔ Which package manager do you want to use? · npm
+- What do you want to lint? · javascript
+- How would you like to use ESLint? · problems
+- What type of modules does your project use? · commonjs
+- Which framework does your project use? · none
+- Does your project use TypeScript? · no
+- Where does your code run? · node
+- Install the recommended dependencies
+- Which package manager do you want to use? · npm
 ```
 
 3. ESLint creates `eslint.config.mjs` (modern config format)
