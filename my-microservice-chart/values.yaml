@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: aithrien/my-microservice
+  repository: "aithrien/my-microservice"  # 👈 Change this if deploying from your own DockerHub repo
   tag: latest
   pullPolicy: IfNotPresent
 
@@ -28,3 +28,7 @@ resources: {}
 nodeSelector: {}
 tolerations: []
 affinity: {}
+
+serviceAccount:
+  create: true
+  name: ""
