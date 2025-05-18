@@ -17,6 +17,13 @@ pipeline {
         sh 'npm install'
       }
     }
+    
+    stage('Lint') {
+      steps {
+        sh 'npm run lint > eslint-report.txt || true'
+        archiveArtifacts artifacts: 'eslint-report.txt', fingerprint: true
+      }
+    }
 
     stage('Run Tests') {
       steps {
