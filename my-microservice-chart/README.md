@@ -7,6 +7,7 @@ A Helm chart for deploying the CI/CD portfolio microservice.
 - Configurable replica count, image, and service port
 - Built-in liveness and readiness probes
 - Supports health check-driven rollbacks
+- Ingress configuration is available but disabled by default
 - Uses values.yaml for easy customization
 
 ## Usage
