@@ -1,15 +1,43 @@
 replicaCount: 1
 
 image:
-  repository: "aithrien/my-microservice"  # 👈 Change this if deploying from your own DockerHub repo
+  repository: "aithrien/my-microservice" # 👈 Change this if deploying from your own DockerHub repo
   tag: latest
   pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+securityContext: {}
 
 service:
   type: ClusterIP
   port: 3000
 
-# Probes for container health
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+resources: {}
+
 livenessProbe:
   httpGet:
     path: /health
@@ -23,24 +51,16 @@ readinessProbe:
     port: http
   initialDelaySeconds: 3
   periodSeconds: 5
-  
-# Ingress configuration
-ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
 
-resources: {}
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+volumes: []
+volumeMounts: []
+
 nodeSelector: {}
 tolerations: []
 affinity: {}
-
-serviceAccount:
-  create: true
-  name: ""
