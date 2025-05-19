@@ -2,8 +2,6 @@
 
 This project demonstrates a complete, production-grade CI/CD pipeline built with open-source tools to support the lifecycle of a Node.js microservice — from build and test to containerization, deployment, and automatic rollback.
 
-> 🛠️ Created and maintained by **Gabriel Cantero**
-
 ---
 
 ## 🗂️ Stack Used
@@ -150,3 +148,5 @@ helm rollback my-microservice <revision>
 - Add Prometheus + Grafana monitoring
 - Use Helm secrets and Kubernetes `Secrets` for secure configs
 - Add image scanning with Trivy
+
+> 🛠️ Created and maintained by **Gabriel Cantero**

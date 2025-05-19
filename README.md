@@ -15,8 +15,6 @@
 
 A complete end-to-end CI/CD lab built around a Dockerized Node.js app deployed to Kubernetes using Helm, tested with Jest, linted with ESLint, and automated by Jenkins.
 
-> 🛠️ Created and maintained by **Gabriel Cantero**
-
 ---
 
 ## 📁 Project Structure
@@ -200,3 +198,5 @@ stage('Lint') {
 ## 🧭 Project Origin
 
 This project was originally based on the Heroku Node.js sample app (https://github.com/heroku/node-js-sample) and has since been significantly extended into a modern, end-to-end CI/CD portfolio with DockerHub, Helm automation, test reporting, and lint quality gates.
+
+> 🛠️ Created and maintained by **Gabriel Cantero**
