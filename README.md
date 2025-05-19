@@ -1,13 +1,11 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Jenkins-CI%2FCD-red?logo=jenkins&logoColor=white" alt="Jenkins Badge"/>
-  <img src="https://img.shields.io/badge/Docker-Container-blue?logo=docker&logoColor=white" alt="Docker Badge"/>
-  <img src="https://img.shields.io/badge/Kubernetes-Orchestration-326ce5?logo=kubernetes&logoColor=white" alt="Kubernetes Badge"/>
-  <img src="https://img.shields.io/badge/Helm-K8s%20Package%20Manager-0f1689?logo=helm&logoColor=white" alt="Helm Badge"/>
-  <img src="https://img.shields.io/badge/Minikube-Local%20Cluster-yellow?logo=minikube&logoColor=black" alt="Minikube Badge"/>
-  <img src="https://img.shields.io/badge/Tests-Passing-brightgreen?logo=jest&logoColor=white" alt="Jest Badge"/>
-  <img src="https://img.shields.io/badge/Lint-Clean-success?logo=eslint&logoColor=white" alt="ESLint Badge"/>
+  <img src="https://img.shields.io/badge/Jenkins-CI%2FCD-red?logo=jenkins&logoColor=white" />
+  <img src="https://img.shields.io/badge/Docker-Container-blue?logo=docker&logoColor=white" />
+  <img src="https://img.shields.io/badge/Kubernetes-Orchestration-326ce5?logo=kubernetes&logoColor=white" />
+  <img src="https://img.shields.io/badge/Tests-Passing-brightgreen?logo=jest&logoColor=white" />
+  <img src="https://img.shields.io/badge/Lint-Clean-success?logo=eslint&logoColor=white" />
   <a href="https://hub.docker.com/r/aithrien/my-microservice" target="_blank">
-    <img src="https://img.shields.io/badge/DockerHub-View%20Image-blue?logo=docker&logoColor=white" alt="DockerHub Badge"/>
+    <img src="https://img.shields.io/badge/DockerHub-View%20Image-blue?logo=docker&logoColor=white" />
   </a>
 </p>
 

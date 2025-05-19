@@ -1,3 +1,14 @@
+<p align="center">
+  <img src="https://img.shields.io/badge/Jenkins-CI%2FCD-red?logo=jenkins&logoColor=white" />
+  <img src="https://img.shields.io/badge/Docker-Container-blue?logo=docker&logoColor=white" />
+  <img src="https://img.shields.io/badge/Kubernetes-Orchestration-326ce5?logo=kubernetes&logoColor=white" />
+  <img src="https://img.shields.io/badge/Tests-Passing-brightgreen?logo=jest&logoColor=white" />
+  <img src="https://img.shields.io/badge/Lint-Clean-success?logo=eslint&logoColor=white" />
+  <a href="https://hub.docker.com/r/aithrien/my-microservice" target="_blank">
+    <img src="https://img.shields.io/badge/DockerHub-View%20Image-blue?logo=docker&logoColor=white" />
+  </a>
+</p>
+
 # 🚀 CI/CD Pipeline Portfolio — Docker, Jenkins & Helm
 
 This project demonstrates a complete, production-grade CI/CD pipeline built with open-source tools to support the lifecycle of a Node.js microservice — from build and test to containerization, deployment, and automatic rollback.
