@@ -35,37 +35,62 @@ This project demonstrates a complete, production-grade CI/CD pipeline built with
 
 ---
 
-## 🔁 Rollback Simulation
+## 🧹 ESLint Quality Gate and Reporting
 
-A failure scenario is simulated using a failing Jest test to validate CI behavior. This triggers Jenkins to report a failed test result while continuing execution of the remaining stages.
- 
-Jenkins then evaluates the application’s health post-deployment. If the service fails the live check, it automatically triggers:
+ESLint is configured in the project using the modern `eslint.config.mjs` format. It checks for syntax errors and basic best practices before test or build stages run.
 
-```bash
-helm rollback my-microservice <revision>
-```
+- Runs with: `npm run lint`
+- Produces a `eslint-report.txt` file on every Jenkins run
+- Report is archived using `archiveArtifacts` and downloadable via the Jenkins UI
 
 ---
 
-## ⚙️ Health Check Strategy
+### 🔁 Failure Case Simulation: ESLint
 
-The pipeline uses:
+To test ESLint’s enforcement and artifact reporting, you can introduce a deliberate lint error such as:
 
-```bash
-kubectl port-forward svc/my-microservice-my-microservice-chart 8888:3000
-curl -s -o /dev/null -w "%{http_code}" http://localhost:8888
+```js
+console.log("Lint test failure");
 ```
 
-If the response is anything other than `200`, the deployment is considered unhealthy.
+If the `no-console` rule is enabled, this will trigger a lint warning or error.
+
+The pipeline:
+- Executes `npm run lint`
+- Captures and archives the output as `eslint-report.txt`
+- Continues the build using `|| true`
+
+This simulates:
+- Style violation visibility in Jenkins
+- Artifact-based debugging without interrupting the deploy process
 
 ---
 
-## ✅ Final State
+## 🧪 Jest Test Coverage and Trend Reporting
 
-- Jenkins connects to Minikube with a properly configured `.kube/config` and TLS certs
-- Pipeline builds and deploys automatically
-- Health checks verify post-deploy success
-- Auto-rollback keeps the system stable
+Jest is integrated with JUnit output so Jenkins can track and trend test outcomes using native JUnit plugin support.
+
+- Test output written to `test-results/junit.xml`
+- Results tracked over time within Jenkins
+- Test failures logged and visible, but do not block deployment
+
+---
+
+### 🔁 Failure Case Simulation: Jest
+
+To validate Jenkins’ test trend and result reporting, you can intentionally trigger a test failure by modifying a test like this:
+
+```js
+expect(true).toBe(false);
+```
+
+This will produce a failed test report which Jenkins will display using the JUnit plugin.
+
+Because the test stage uses `|| true`, the pipeline continues execution without halting — allowing you to observe test regressions without blocking the deployment entirely.
+
+This demonstrates:
+- CI visibility for test failures
+- Non-blocking test trends for quality insight
 
 ---
 
@@ -83,45 +108,38 @@ https://hub.docker.com/r/aithrien/my-microservice
 
 ---
 
-## 🧪 Test Automation and CI Visibility
+## ⚙️ Health Check Strategy
 
-Jest is configured as the unit testing framework. Each commit triggers a test run within Jenkins, using `jest-junit` to output results into JUnit-compatible XML.
+The pipeline uses:
 
-### How Tests Are Handled
-
-- `npm test` is run automatically as part of the pipeline.
-- Results are written to `test-results/junit.xml`.
-- Jenkins uses the `junit` plugin to parse and display the results.
-- A **Test Result Trend** graph is displayed on every build summary page.
-
-### Failure Case Simulation
-
-A failure scenario was created by forcing a test to fail:
-
-```js
-expect(true).toBe(false);
+```bash
+kubectl port-forward svc/my-microservice-my-microservice-chart 8888:3000
+curl -s -o /dev/null -w "%{http_code}" http://localhost:8888
 ```
 
-Jenkins executed the test stage, reported the failed result, and preserved the build's full report while continuing the deployment flow (due to `|| true` in the script). This simulates a CI behavior where test trends can be used to monitor quality regressions without fully blocking deployment.
+If the response is anything other than `200`, the deployment is considered unhealthy.
 
 ---
 
-## 🧹 ESLint Quality Gate and Reporting
+## 🔁 Rollback Simulation
 
-ESLint is configured in the project using the modern `eslint.config.mjs` format. It checks for syntax errors and basic best practices before test or build stages run.
+A failure scenario is simulated using a failing Jest test to validate CI behavior. This triggers Jenkins to report a failed test result while continuing execution of the remaining stages.
+ 
+Jenkins then evaluates the application’s health post-deployment. If the service fails the live check, it automatically triggers:
 
-- Runs with: `npm run lint`
-- Produces a `eslint-report.txt` file on every Jenkins run
-- Report is archived using `archiveArtifacts` and downloadable via the Jenkins UI
+```bash
+helm rollback my-microservice <revision>
+```
 
-### Failure Case Simulation
+---
 
-To simulate a failure, a temporary rule violation was added (e.g., using `console.log` where disallowed).  
-The pipeline stage ran ESLint, logged the failure in the artifact, but continued the pipeline using `|| true`.
-
-This pattern demonstrates:
-- CI visibility without halting critical deploy steps
-- Artifact-based debugging of coding style issues
+## ✅ Final State
+ 
+- Jenkins connects securely to Minikube with a configured `.kube/config` and TLS certificates
+- The CI/CD pipeline builds, lints, tests, pushes, and deploys automatically
+- Health checks verify post-deploy stability
+- Auto-rollback protects against bad deployments
+- All quality gates (tests + lint) are visible in Jenkins with archived reports
 
 ---
 
