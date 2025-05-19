@@ -11,7 +11,7 @@
   </a>
 </p>
 
-# 🧪 my-microservice — CI/CD Portfolio Lab
+# 🧪 my-microservice — CI/CD Release Engineering Lab
 
 A complete end-to-end CI/CD lab built around a Dockerized Node.js app deployed to Kubernetes using Helm, tested with Jest, linted with ESLint, and automated by Jenkins.
 

@@ -1,4 +1,4 @@
-## 🚀 Release Engineering CI/CD Pipeline: Docker, Jenkins, Helm, Jest & ESLint
+# 🚀 CI/CD Pipeline Portfolio — Docker, Jenkins, Helm, Jest & ESLint
 
 This project demonstrates a complete, production-grade CI/CD pipeline built with open-source tools to support the lifecycle of a Node.js microservice — from build and test to containerization, deployment, and automatic rollback.
 
