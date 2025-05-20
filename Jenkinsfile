@@ -1,6 +1,10 @@
 pipeline {
   agent any
 
+  parameters {
+    choice(name: 'FLAG_STATE', choices: ['on', 'off'], description: 'Set the state of the feature flag show-beta-banner')
+  }
+
   environment {
     IMAGE_NAME = "my-microservice:latest"
   }
@@ -17,7 +21,7 @@ pipeline {
         sh 'npm install'
       }
     }
-    
+
     stage('Lint') {
       steps {
         sh 'npm run lint > eslint-report.txt || true'
@@ -45,21 +49,21 @@ pipeline {
         sh 'docker build -t $IMAGE_NAME .'
       }
     }
-    
+
     stage('Docker Login') {
       steps {
-	withCredentials([usernamePassword(
-	  credentialsId: 'dockerhub-creds', 
-	  usernameVariable: 'DOCKER_USER', 
-	  passwordVariable: 'DOCKER_PASS'
-	)]) {
-	  sh '''
-	    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-	  '''
-	}
+        withCredentials([usernamePassword(
+          credentialsId: 'dockerhub-creds',
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
+          sh '''
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+          '''
+        }
       }
     }
-    
+
     stage('Tag & Push Docker Image') {
       steps {
         withCredentials([usernamePassword(
@@ -74,11 +78,11 @@ pipeline {
         }
       }
     }
-    
+
     stage('Verify Kube Access') {
       steps {
         sh 'kubectl config current-context || echo "❌ No Kube context loaded"'
-    	sh 'kubectl get nodes || echo "❌ Cluster unreachable"'
+        sh 'kubectl get nodes || echo "❌ Cluster unreachable"'
       }
     }
 
@@ -89,6 +93,43 @@ pipeline {
       }
     }
 
+    stage('Toggle Feature Flag') {
+      steps {
+        script {
+          echo "Setting Unleash flag 'show-beta-banner' to ${params.FLAG_STATE}"
+
+          withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
+            sh """
+              curl -X POST http://localhost:4242/api/admin/features/show-beta-banner/environments/development/${params.FLAG_STATE} \
+                -H "Authorization: \$UNLEASH_ADMIN_TOKEN" \
+                -H "Content-Type: application/json"
+            """
+          }
+        }
+      }
+    }
+
+    stage('Log All Feature Flags') {
+      steps {
+        script {
+          echo "Fetching current feature flags from Unleash..."
+
+          withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
+            sh '''
+              curl -s http://localhost:4242/api/admin/projects/default/features \
+                -H "Authorization: $UNLEASH_ADMIN_TOKEN" \
+                -H "Content-Type: application/json" > unleash-flags.json
+
+              echo "🔍 Feature Flags Snapshot:"
+              cat unleash-flags.json
+            '''
+          }
+
+          archiveArtifacts artifacts: 'unleash-flags.json', fingerprint: true
+        }
+      }
+    }
+
     stage('Health Check & Auto-Rollback') {
       steps {
         script {
@@ -96,8 +137,7 @@ pipeline {
 
           // Start port-forward in background
           sh 'kubectl port-forward svc/my-microservice-my-microservice-chart 8888:3000 &'
-          
-          // Wait for it to stabilize
+
           sleep 5
 
           def healthCode = sh(
@@ -113,6 +153,14 @@ pipeline {
             error("Deployment failed health check. Rolled back.")
           } else {
             echo "✅ Health check passed — app is healthy"
+
+            sh '''
+              curl -s http://localhost:8888 > feature-output.txt
+              echo "Rendered App Output:"
+              cat feature-output.txt
+            '''
+
+            archiveArtifacts artifacts: 'feature-output.txt', fingerprint: true
           }
         }
       }
@@ -125,3 +173,4 @@ pipeline {
     }
   }
 }
+
