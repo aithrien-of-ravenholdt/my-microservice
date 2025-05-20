@@ -5,6 +5,17 @@ const { initialize } = require('unleash-client');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Expose health endpoint early so health checks don't fail
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
+// Start the server immediately
+app.listen(PORT, () => {
+  console.log(`✅ App running on port ${PORT}`);
+});
+
+// Initialize Unleash SDK
 const unleash = initialize({
   url: 'http://localhost:4242/api/',
   appName: 'cicd-lab-app',
@@ -14,11 +25,7 @@ const unleash = initialize({
   },
 });
 
-// Optional: define health early so it's always available
-app.get('/health', (req, res) => {
-  res.status(200).send('OK');
-});
-
+// Flag-aware route waits until Unleash is ready
 unleash.on('ready', () => {
   console.log('✅ Unleash is ready');
 
@@ -32,10 +39,6 @@ unleash.on('ready', () => {
     const betaMessage = '\n🧪 Beta Feature: Releasing smarter, one flag at a time.';
 
     res.send(baseMessage + (betaEnabled ? betaMessage : ''));
-  });
-
-  app.listen(PORT, () => {
-    console.log(`✅ App running on port ${PORT}`);
   });
 });
 
