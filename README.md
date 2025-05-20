@@ -11,7 +11,11 @@
 
 # 🧪 my-microservice — Release Engineering Lab
 
-A complete end-to-end CI/CD lab built around a Dockerized Node.js app deployed to Kubernetes using Helm, tested with Jest, linted with ESLint, and automated by Jenkins.
+This project is a complete, hands-on CI/CD lab, built to simulate a real-world DevOps and release pipeline lifecycle, from building and testing a Node.js microservice to containerizing it with Docker and deploying to Kubernetes using Helm.
+ 
+📝 While originally inspired by a standard Express template, the application logic was fully rewritten and restructured to serve as a clean, integration-friendly foundation for advanced CI/CD tooling. There is no inherited logic or boilerplate from the original source.
+ 
+The real focus of this lab is not the app itself, but the automated infrastructure surrounding it, including Jenkins pipelines, DockerHub integration, test and lint quality gates, Helm deployments, rollback automation, and Kubernetes-based health checks.
 
 ---
 
@@ -193,8 +197,10 @@ stage('Lint') {
 
 ---
 
-## 🧭 Project Origin
+## 📈 Next Steps / Portfolio Extensions
+ 
+See [PORTFOLIO.md](./PORTFOLIO.md) for the full roadmap, upcoming tooling, and release engineering enhancements.
 
-This project was originally based on the Heroku Node.js sample app (https://github.com/heroku/node-js-sample) and has since been significantly extended into a modern, end-to-end CI/CD portfolio with DockerHub, Helm automation, test reporting, and lint quality gates.
+---
 
 > 🛠️ Created and maintained by **Gabriel Cantero**

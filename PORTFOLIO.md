@@ -152,12 +152,48 @@ helm rollback my-microservice <revision>
 
 ---
 
-## 📈 Next Improvements
+## 📈 Next Steps / Portfolio Extensions
+ 
+### 🧪 Code Quality Analysis
 
-- Deploy to a real Kubernetes cluster (e.g., EKS, GKE)
-- Integrate static analysis
-- Add Prometheus + Grafana monitoring
-- Use Helm secrets and Kubernetes `Secrets` for secure configs
-- Add image scanning with Trivy
+- Integrate SonarQube scanner into the Jenkins pipeline
+
+- Visualize code coverage and maintainability metrics in SonarQube dashboard
+
+- Enforce thresholds for code smells or technical debt as gate conditions
+ 
+### ☁️ Push to Cloud
+
+- Deploy to a managed Kubernetes cluster (e.g., GKE, EKS)
+
+- Use GitHub Actions or Jenkins agents to deploy to cloud environments
+
+- Integrate external DNS & TLS via cert-manager and Ingress resources
+ 
+### 📊 Monitoring & Observability
+
+- Integrate Prometheus + Grafana for live container metrics
+
+- Archive static analysis results in Jenkins for auditing
+
+- Add alerting rules and dashboards for test failures and resource spikes
+ 
+### 🛡️ Security & Hardening
+
+- Scan container images with Trivy
+
+- Use Helm Secrets and Kubernetes `Secrets` for secure config and credentials
+
+- Integrate RBAC for Jenkins service account and namespace isolation
+
+### 📦 Release Traceability & Promotion
+
+- Implement version tagging for release candidates and stable releases
+
+- Automate changelog generation based on Git commit history
+
+- Track and archive release metadata (image tag, test results, lint summary) per pipeline run
+
+---
 
 > 🛠️ Created and maintained by **Gabriel Cantero**
