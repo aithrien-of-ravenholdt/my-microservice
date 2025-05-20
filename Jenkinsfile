@@ -98,17 +98,18 @@ pipeline {
         script {
           echo "Setting Unleash flag 'show-beta-banner' to ${params.FLAG_STATE}"
 
+          def action = (params.FLAG_STATE == 'on') ? 'on' : 'off'
+
           withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
             sh """
-              curl -X PATCH http://localhost:4242/api/admin/projects/default/features/show-beta-banner/environments/development \\
-                -H \"Authorization: Bearer \$UNLEASH_ADMIN_TOKEN\" \\
-                -H \"Content-Type: application/json\" \\
-                --data '{\"enabled\": ${params.FLAG_STATE == 'on'}}'
+              curl -X POST http://localhost:4242/api/admin/projects/default/features/show-beta-banner/environments/development/${action} \\
+                -H "Authorization: Bearer \$UNLEASH_ADMIN_TOKEN" \\
+                -H "Content-Type: application/json"
             """
           }
         }
       }
-    }
+    } 
 
     stage('Log All Feature Flags') {
       steps {
