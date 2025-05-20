@@ -25,7 +25,13 @@ unleash.on('error', console.error);
 
 // Main route with feature flag behavior
 app.get('/', (req, res) => {
-  const betaEnabled = unleash.isEnabled('show-beta-banner');
+  const context = {
+    userId: 'ci-cd-lab'  // or use any fixed string for testing
+  };
+
+  const betaEnabled = unleash.isEnabled('show-beta-banner', context);
+
+  console.log(`🧪 Flag 'show-beta-banner' is ${betaEnabled ? 'ENABLED' : 'DISABLED'}`);
 
   const baseMessage = 'Welcome to the CI/CD Release Engineering Lab 🚀';
   const betaMessage = '\n🧪 Beta Feature: Releasing smarter, one flag at a time.';
