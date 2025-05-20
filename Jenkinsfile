@@ -116,9 +116,9 @@ pipeline {
 
           withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
             sh '''
-              curl -s http://localhost:4242/api/admin/projects/default/features \
-                -H "Authorization: $UNLEASH_ADMIN_TOKEN" \
-                -H "Content-Type: application/json" > unleash-flags.json
+              curl -X PATCH http://localhost:4242/api/admin/projects/default/features/show-beta-banner \\
+                -H "Authorization: Bearer \$UNLEASH_ADMIN_TOKEN" \\
+                -H "Content-Type: application/json" \\
 
               echo "🔍 Feature Flags Snapshot:"
               cat unleash-flags.json
