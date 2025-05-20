@@ -153,6 +153,17 @@ helm rollback my-microservice <revision>
 ---
 
 ## 📈 Next Steps / Portfolio Extensions
+
+### 🎯 Feature Flags with Unleash
+- Deploy and self-host Unleash with Helm in the Kubernetes cluster
+- Integrate the Node.js app with Unleash SDK to toggle routes or behavior
+- Use strategies (e.g., user ID, environment) to simulate staged rollouts in CI/CD
+
+### 🛡️ Security & Hardening
+
+- Scan container images with Trivy
+- Use Helm Secrets and Kubernetes `Secrets` for secure config and credentials
+- Integrate RBAC for Jenkins service account and namespace isolation
  
 ### 🧪 Code Quality Analysis
 
@@ -171,12 +182,6 @@ helm rollback my-microservice <revision>
 - Integrate Prometheus + Grafana for live container metrics
 - Archive static analysis results in Jenkins for auditing
 - Add alerting rules and dashboards for test failures and resource spikes
- 
-### 🛡️ Security & Hardening
-
-- Scan container images with Trivy
-- Use Helm Secrets and Kubernetes `Secrets` for secure config and credentials
-- Integrate RBAC for Jenkins service account and namespace isolation
 
 ### 📦 Release Traceability & Promotion
 
