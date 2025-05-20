@@ -2,14 +2,16 @@
   "name": "my-microservice",
   "version": "1.0.0",
   "description": "A Node.js microservice with CI/CD using Jenkins, Docker, and Helm",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node app.js",
     "test": "jest",
     "lint": "eslint ."
   },
   "dependencies": {
-    "express": "^4.13.3"
+    "dotenv": "^16.5.0",
+    "express": "^4.13.3",
+    "unleash-client": "^6.6.0"
   },
   "engines": {
     "node": ">=18.0.0"
