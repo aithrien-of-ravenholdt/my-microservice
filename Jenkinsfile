@@ -169,11 +169,13 @@ pipeline {
         }
       }
     }
+  }
 
-    post {
-      always {
-        sh 'docker stop microservice || true'
-      }
+  post {
+    always {
+      sh 'docker stop microservice || true'
     }
+  }
 }
+ 
 
