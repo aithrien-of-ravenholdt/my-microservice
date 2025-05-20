@@ -137,9 +137,9 @@ pipeline {
         script {
           echo "Starting health check with kubectl port-forward..."
 
-          sh 'kubectl port-forward svc/my-microservice-my-microservice-chart 8888:3000 &'
-          sleep 5
-
+          sh 'nohup kubectl port-forward svc/my-microservice-my-microservice-chart 8888:3000 > port-forward.log 2>&1 &'
+          sleep 10
+          
           def healthCode = ''
           retry(3) {
             sleep 3
