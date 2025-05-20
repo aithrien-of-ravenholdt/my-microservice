@@ -137,36 +137,33 @@ pipeline {
         script {
           echo "Starting health check with kubectl port-forward..."
 
-          // Start port-forward in background
           sh 'kubectl port-forward svc/my-microservice-my-microservice-chart 8888:3000 &'
+          sleep 5
 
-          // Wait longer to ensure Unleash is fully ready inside app
-          sleep 8
+          def healthCode = ''
+          retry(3) {
+            sleep 3
+            healthCode = sh(
+              script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8888/health',
+              returnStdout: true
+            ).trim()
 
-          def healthCode = sh(
-            script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8888/health',
-            returnStdout: true
-          ).trim()
+            if (healthCode != '200') {
+              echo "Waiting for app... Health code was ${healthCode}"
+              error("Not ready yet")
+            }
+          }
 
           echo "Health check returned HTTP ${healthCode}"
+          echo "✅ Health check passed — app is healthy"
 
-          if (healthCode != '200') {
-            echo "❌ Health check failed — rolling back"
-            sh 'helm rollback my-microservice 3'
-            error("Deployment failed health check. Rolled back.")
-          } else {
-            echo "✅ Health check passed — app is healthy"
+          sh '''
+            curl -s http://localhost:8888 > feature-output.txt
+            echo "Rendered App Output:"
+            cat feature-output.txt
+          '''
 
-            // Fetch and capture main app output after waiting a bit more
-            sh '''
-              sleep 2
-              curl -s http://localhost:8888 > feature-output.txt
-              echo "Rendered App Output:"
-              cat feature-output.txt
-            '''
-
-            archiveArtifacts artifacts: 'feature-output.txt', fingerprint: true
-          }
+          archiveArtifacts artifacts: 'feature-output.txt', fingerprint: true
         }
       }
     }
