@@ -10,6 +10,11 @@ app.get('/health', (req, res) => {
   res.status(200).send('OK');
 });
 
+// Temporary fallback root route
+app.get('/', (req, res) => {
+  res.send('⏳ Unleash not ready yet');
+});
+
 // Start the server immediately
 app.listen(PORT, () => {
   console.log(`✅ App running on port ${PORT}`);
@@ -29,6 +34,10 @@ const unleash = initialize({
 unleash.on('ready', () => {
   console.log('✅ Unleash is ready');
 
+  // Remove temporary fallback route
+  app._router.stack = app._router.stack.filter(r => !(r.route && r.route.path === '/'));
+
+  // Define final root route
   app.get('/', (req, res) => {
     const context = { userId: 'ci-cd-lab' };
     const betaEnabled = unleash.isEnabled('show-beta-banner', context);
