@@ -139,10 +139,11 @@ pipeline {
           // Start port-forward in background
           sh 'kubectl port-forward svc/my-microservice-my-microservice-chart 8888:3000 &'
 
-          sleep 5
+          // Wait longer to ensure Unleash is fully ready inside app
+          sleep 8
 
           def healthCode = sh(
-            script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8888',
+            script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8888/health',
             returnStdout: true
           ).trim()
 
@@ -155,7 +156,9 @@ pipeline {
           } else {
             echo "✅ Health check passed — app is healthy"
 
+            // Fetch and capture main app output after waiting a bit more
             sh '''
+              sleep 2
               curl -s http://localhost:8888 > feature-output.txt
               echo "Rendered App Output:"
               cat feature-output.txt
@@ -166,7 +169,6 @@ pipeline {
         }
       }
     }
-  }
 
   post {
     always {
