@@ -110,19 +110,23 @@ pipeline {
       }
     }
 
-    stage('Toggle Feature Flag') {
+    stage('Log All Feature Flags') {
       steps {
         script {
-          echo "Setting Unleash flag 'show-beta-banner' to ${params.FLAG_STATE}"
+          echo "Fetching current feature flags from Unleash..."
 
           withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
-            sh """
-              curl -X PATCH http://localhost:4242/api/admin/projects/default/features/show-beta-banner \\
-                -H "Authorization: Bearer \$UNLEASH_ADMIN_TOKEN" \\
-                -H "Content-Type: application/json" \\
-                --data '[{"op": "replace", "path": "/enabled", "value": ${params.FLAG_STATE == 'on'}}]'
-            """
+            sh '''
+              curl -s http://localhost:4242/api/admin/projects/default/features \
+                -H "Authorization: Bearer $UNLEASH_ADMIN_TOKEN" \
+                -H "Content-Type: application/json" > unleash-flags.json
+
+              echo "🔍 Feature Flags Snapshot:"
+              cat unleash-flags.json
+            '''
           }
+
+          archiveArtifacts artifacts: 'unleash-flags.json', fingerprint: true
         }
       }
     }
