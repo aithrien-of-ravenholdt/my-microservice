@@ -100,10 +100,10 @@ pipeline {
 
           withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
             sh """
-              curl -X PATCH http://localhost:4242/api/admin/projects/default/features/show-beta-banner \\
-                -H "Authorization: Bearer \$UNLEASH_ADMIN_TOKEN" \\
-                -H "Content-Type: application/json" \\
-                --data '[{"op": "replace", "path": "/enabled", "value": ${params.FLAG_STATE == 'on'}}]'
+              curl -X PATCH http://localhost:4242/api/admin/projects/default/features/show-beta-banner/environments/development \\
+                -H \"Authorization: Bearer \$UNLEASH_ADMIN_TOKEN\" \\
+                -H \"Content-Type: application/json\" \\
+                --data '{\"enabled\": ${params.FLAG_STATE == 'on'}}'
             """
           }
         }
