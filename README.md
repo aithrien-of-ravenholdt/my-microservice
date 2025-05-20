@@ -201,6 +201,4 @@ stage('Lint') {
  
 See [PORTFOLIO.md](./PORTFOLIO.md) for the full roadmap, upcoming tooling, and release engineering enhancements.
 
----
-
-> 🛠️ Created and maintained by **Gabriel Cantero**
+🛠️ **Created and maintained by Gabriel Cantero**
