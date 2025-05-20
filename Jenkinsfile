@@ -100,32 +100,29 @@ pipeline {
 
           withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
             sh """
-              curl -X POST http://localhost:4242/api/admin/features/show-beta-banner/environments/development/${params.FLAG_STATE} \
-                -H "Authorization: \$UNLEASH_ADMIN_TOKEN" \
-                -H "Content-Type: application/json"
+              curl -X PATCH http://localhost:4242/api/admin/projects/default/features/show-beta-banner \\
+                -H "Authorization: Bearer \$UNLEASH_ADMIN_TOKEN" \\
+                -H "Content-Type: application/json" \\
+                --data '[{"op": "replace", "path": "/enabled", "value": ${params.FLAG_STATE == 'on'}}]'
             """
           }
         }
       }
     }
 
-    stage('Log All Feature Flags') {
+    stage('Toggle Feature Flag') {
       steps {
         script {
-          echo "Fetching current feature flags from Unleash..."
+          echo "Setting Unleash flag 'show-beta-banner' to ${params.FLAG_STATE}"
 
           withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
-            sh '''
+            sh """
               curl -X PATCH http://localhost:4242/api/admin/projects/default/features/show-beta-banner \\
                 -H "Authorization: Bearer \$UNLEASH_ADMIN_TOKEN" \\
                 -H "Content-Type: application/json" \\
-
-              echo "🔍 Feature Flags Snapshot:"
-              cat unleash-flags.json
-            '''
+                --data '[{"op": "replace", "path": "/enabled", "value": ${params.FLAG_STATE == 'on'}}]'
+            """
           }
-
-          archiveArtifacts artifacts: 'unleash-flags.json', fingerprint: true
         }
       }
     }
