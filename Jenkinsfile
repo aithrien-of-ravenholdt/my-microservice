@@ -109,7 +109,7 @@ pipeline {
           }
         }
       }
-    } 
+    }
 
     stage('Log All Feature Flags') {
       steps {
@@ -139,10 +139,14 @@ pipeline {
 
           sh 'nohup kubectl port-forward svc/my-microservice-my-microservice-chart 8888:3000 > port-forward.log 2>&1 &'
           sleep 10
-          
+
           def healthCode = ''
           retry(3) {
             sleep 3
+            echo "⏳ Retrying health check..."
+
+            sh 'lsof -i :8888 || echo "🔍 Port 8888 not open yet"'
+
             healthCode = sh(
               script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8888/health',
               returnStdout: true
@@ -157,11 +161,23 @@ pipeline {
           echo "Health check returned HTTP ${healthCode}"
           echo "✅ Health check passed — app is healthy"
 
-          sh '''
-            curl -s http://localhost:8888 > feature-output.txt
-            echo "Rendered App Output:"
-            cat feature-output.txt
-          '''
+          retry(5) {
+            sleep 2
+            def output = sh(
+              script: 'curl -s http://localhost:8888',
+              returnStdout: true
+            ).trim()
+
+            if (!output.contains("CI/CD Release Engineering Lab")) {
+              echo "Output not ready yet:\n${output}"
+              error("App not fully ready")
+            }
+
+            writeFile file: 'feature-output.txt', text: output
+          }
+
+          echo "Rendered App Output:"
+          sh 'cat feature-output.txt'
 
           archiveArtifacts artifacts: 'feature-output.txt', fingerprint: true
         }
@@ -176,4 +192,3 @@ pipeline {
   }
 }
  
-
