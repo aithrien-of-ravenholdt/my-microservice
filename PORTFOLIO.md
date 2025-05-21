@@ -4,6 +4,9 @@
   <img src="https://img.shields.io/badge/Kubernetes-Orchestration-326ce5?logo=kubernetes&logoColor=white" />
   <img src="https://img.shields.io/badge/Tests-Passing-brightgreen?logo=jest&logoColor=white" />
   <img src="https://img.shields.io/badge/Lint-Clean-success?logo=eslint&logoColor=white" />
+  <a href="https://getunleash.io" target="_blank">
+    <img src="https://img.shields.io/badge/Unleash-Feature%20Flags-4e2a8e" />
+  </a>
   <a href="https://hub.docker.com/r/aithrien/my-microservice" target="_blank">
     <img src="https://img.shields.io/badge/DockerHub-View%20Image-blue?logo=docker&logoColor=white" />
   </a>
@@ -26,6 +29,7 @@ This project demonstrates a complete, production-grade CI/CD pipeline built with
 - **Minikube** – Local Kubernetes cluster
 - **DockerHub** – Remote container registry for CI-delivered images
 - **kubectl** – K8s command-line tool
+- **Unleash** – Feature flag service integrated with the CI pipeline
 
 ---
 
@@ -38,9 +42,11 @@ This project demonstrates a complete, production-grade CI/CD pipeline built with
 5. **Builds a Docker image**
 6. **Pushes the image** to DockerHub securely via Jenkins credentials
 7. **Deploys to Kubernetes using Helm**
-8. **Exposes the service using `kubectl port-forward`**
-9. **Performs a live health check via `curl`**
-10. **Rolls back automatically** if the health check fails
+8. **Toggles feature flags in Unleash** based on a pipeline parameter
+9. **Exposes the service using `kubectl port-forward`**
+10. **Performs a live health check via `curl`**
+11. **Fetches the live app output and archives it**
+12. **Rolls back automatically** if the health check fails
 
 ---
 
@@ -103,6 +109,25 @@ This demonstrates:
 
 ---
 
+### 🚩 Unleash Feature Flags Integration
+
+Unleash is integrated with both the Node.js microservice and the Jenkins pipeline to support runtime toggling of application behavior via feature flags.
+
+- The app uses the Unleash Node SDK to enable or disable parts of its output.
+- Jenkins passes a `FLAG_STATE` parameter (`on` or `off`) during the pipeline run.
+- Jenkins authenticates via a reusable admin token and calls the Unleash API to update the flag state.
+- The deployed application fetches that flag on boot, influencing the response returned on the root route (`/`).
+
+The pipeline captures this behavior by:
+
+- Calling `curl http://localhost:8888` after deployment
+- Saving the HTML response to `rendered-output.html`
+- Archiving it for visual inspection via Jenkins UI
+
+This lets stakeholders **see the real app output change** based on the feature flag — showcasing live control over production behavior via CI.
+
+---
+
 ## 🐳 DockerHub Integration
 
 An automated stage was added to push Docker images to DockerHub from Jenkins using securely stored credentials. This step includes:
@@ -153,11 +178,6 @@ helm rollback my-microservice <revision>
 ---
 
 ## 🚧 CI/CD Planned Roadmap
-
-### 🎯 Feature Flags with Unleash
-- Deploy and self-host Unleash with Helm in the Kubernetes cluster
-- Integrate the Node.js app with Unleash SDK to toggle routes or behavior
-- Use strategies (e.g., user ID, environment) to simulate staged rollouts in CI/CD
 
 ### 🛡️ Security & Hardening
 
