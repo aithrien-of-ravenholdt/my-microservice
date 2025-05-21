@@ -189,7 +189,6 @@ Toggles the beta message visibility in app response.
         }
       }
     }
-  }
   
     // Fetch rendered HTML response from root route
     stage('Capture Rendered App Output') {
@@ -203,6 +202,7 @@ Toggles the beta message visibility in app response.
         archiveArtifacts artifacts: 'rendered-output.html', fingerprint: true
       }
     }  
+  }
 
   // Cleanup hook
   post {
