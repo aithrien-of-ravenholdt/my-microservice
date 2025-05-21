@@ -143,19 +143,6 @@ Toggles the beta message visibility in app response.
       }
     }
 
-    // Fetch rendered HTML response from root route
-    stage('Capture Rendered App Output') {
-      steps {
-        echo "📥 Fetching actual app response from root route..."
-        sh '''
-          echo "<pre>" > rendered-output.html
-          curl -s http://localhost:8888 >> rendered-output.html
-          echo "</pre>" >> rendered-output.html
-        '''
-        archiveArtifacts artifacts: 'rendered-output.html', fingerprint: true
-      }
-    }
-
     // Log and store Unleash feature flag state
     stage('Log All Feature Flags') {
       steps {
@@ -203,6 +190,19 @@ Toggles the beta message visibility in app response.
       }
     }
   }
+  
+    // Fetch rendered HTML response from root route
+    stage('Capture Rendered App Output') {
+      steps {
+        echo "📥 Fetching actual app response from root route..."
+        sh '''
+          echo "<pre>" > rendered-output.html
+          curl -s http://localhost:8888 >> rendered-output.html
+          echo "</pre>" >> rendered-output.html
+        '''
+        archiveArtifacts artifacts: 'rendered-output.html', fingerprint: true
+      }
+    }  
 
   // Cleanup hook
   post {
