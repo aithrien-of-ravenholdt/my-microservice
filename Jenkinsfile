@@ -15,6 +15,24 @@ pipeline {
         git branch: 'main', url: 'https://github.com/aithrien-of-ravenholdt/my-microservice.git'
       }
     }
+    
+    stage('Toggle Feature Flag') {
+      steps {
+        script {
+          echo "Setting Unleash flag 'show-beta-banner' to ${params.FLAG_STATE}"
+
+          def action = (params.FLAG_STATE == 'on') ? 'on' : 'off'
+
+          withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
+            sh """
+              curl -X POST http://localhost:4242/api/admin/projects/default/features/show-beta-banner/environments/development/${action} \\
+                -H "Authorization: Bearer \$UNLEASH_ADMIN_TOKEN" \\
+                -H "Content-Type: application/json"
+            """
+          }
+        }
+      }
+    }    
 
     stage('Install dependencies') {
       steps {
@@ -85,24 +103,6 @@ pipeline {
         sh 'kubectl get nodes || echo "❌ Cluster unreachable"'
       }
     }
-    
-    stage('Toggle Feature Flag') {
-      steps {
-        script {
-          echo "Setting Unleash flag 'show-beta-banner' to ${params.FLAG_STATE}"
-
-          def action = (params.FLAG_STATE == 'on') ? 'on' : 'off'
-
-          withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
-            sh """
-              curl -X POST http://localhost:4242/api/admin/projects/default/features/show-beta-banner/environments/development/${action} \\
-                -H "Authorization: Bearer \$UNLEASH_ADMIN_TOKEN" \\
-                -H "Content-Type: application/json"
-            """
-          }
-        }
-      }
-    }    
 
     stage('Helm Deploy') {
       steps {
