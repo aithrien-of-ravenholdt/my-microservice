@@ -4,6 +4,9 @@
   <img src="https://img.shields.io/badge/Kubernetes-Orchestration-326ce5?logo=kubernetes&logoColor=white" />
   <img src="https://img.shields.io/badge/Tests-Passing-brightgreen?logo=jest&logoColor=white" />
   <img src="https://img.shields.io/badge/Lint-Clean-success?logo=eslint&logoColor=white" />
+  <a href="https://getunleash.io" target="_blank">
+    <img src="https://img.shields.io/badge/Unleash-Feature%20Flags-4e2a8e" />
+  </a>
   <a href="https://hub.docker.com/r/aithrien/my-microservice" target="_blank">
     <img src="https://img.shields.io/badge/DockerHub-View%20Image-blue?logo=docker&logoColor=white" />
   </a>
@@ -194,6 +197,81 @@ stage('Lint') {
   }
 }
 ```
+
+---
+
+### 🎚️ Part 7: Unleash Feature Flags
+
+#### 7A. Installation & Setup
+
+1. **Add Unleash Helm Repo and install:**
+```bash
+helm repo add unleash https://docs.getunleash.io/helm-charts
+helm repo update
+helm install unleash-server unleash/unleash --set postgresql.enabled=true
+```
+
+2. **Port-forward Unleash UI locally:**
+```bash
+kubectl port-forward svc/unleash-server 4242:4242 --address 0.0.0.0
+```
+
+3. **Access Unleash at:**  
+[http://localhost:4242](http://localhost:4242)
+
+4. **Default Credentials**
+
+- **Username:** `admin`  
+- **Password:** `unleash4all`
+
+These credentials are baked into the default container (ideal for local labs). No signup is needed.
+
+#### 7B. Generate an Admin API Token
+
+1. Log into Unleash UI  
+2. Go to your **user profile → API Tokens**  
+3. Choose:  
+   - **Type:** Admin  
+   - **Project:** default  
+   - **Environment:** development  
+   - **Expiration:** (suggested: Never)  
+4. Copy the token to use in `.env` as:
+```
+UNLEASH_API_TOKEN=your-token-here
+```
+
+#### 7C. Create a Feature Flag
+
+1. In **Projects → default**, click **"New Feature Toggle"**  
+2. Name it: `show-beta-banner`  
+3. Set type: `release`  
+4. Enable it for the `development` environment  
+5. Apply the **Flexible Rollout** strategy:  
+   - Stickiness: `default`  
+   - Rollout: `100%`
+
+#### 7D. Jenkins Integration
+
+Jenkins will:  
+- Read the value of `FLAG_STATE` (on/off)  
+- Call the Unleash API to toggle the flag  
+- Deploy the app and verify behavior based on the toggle  
+- Capture the actual HTML response and log it
+
+Jenkins uses this command internally:
+```bash
+curl -X POST http://localhost:4242/api/admin/projects/default/features/show-beta-banner/environments/development/on \
+  -H "Authorization: Bearer $UNLEASH_ADMIN_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+The flag result is reflected in your app response:
+```
+Welcome to the CI/CD Release Engineering Lab 🚀
+🧪 Beta Feature: Releasing smarter, one flag at a time.
+```
+
+When disabled, the second line is hidden.
 
 ---
 
