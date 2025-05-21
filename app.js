@@ -1,3 +1,6 @@
+// CI/CD Lab App — Express server with Unleash feature flag integration
+// Responds to root route with flag-controlled message, logs toggle state
+
 require('dotenv').config();
 
 const express = require('express');
@@ -17,16 +20,19 @@ const unleash = initialize({
   },
 });
 
+// Log when Unleash SDK is ready and fetch initial toggles
 unleash.on('ready', async () => {
   console.log('✅ Unleash is ready');
   await unleash.repository.fetch();
   console.log('🔄 Flags fetched on boot');
 });
 
+// Log Unleash client-side errors
 unleash.on('error', (err) => {
   console.error('❌ Unleash error:', err);
 });
 
+// Root route with flag-controlled message
 app.get('/', (req, res) => {
   const context = { userId: 'ci-cd-lab' };
   const betaEnabled = unleash.isEnabled('show-beta-banner', context);
@@ -41,10 +47,12 @@ app.get('/', (req, res) => {
   res.send(response);
 });
 
+// Health check route
 app.get('/health', (req, res) => {
   res.status(200).send('OK');
 });
 
+// Start the app on defined port
 app.listen(PORT, () => {
   console.log(`✅ App running on port ${PORT}`);
 });

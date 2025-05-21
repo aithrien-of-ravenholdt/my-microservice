@@ -1,21 +1,36 @@
+// Jenkinsfile for CI/CD Release Engineering Lab
+// Includes: Feature flag toggling via Unleash, quality gates, build, deployment, and observability
+
 pipeline {
   agent any
 
+  // Feature flag toggle: user can control 'show-beta-banner' from Jenkins UI
   parameters {
-    choice(name: 'FLAG_STATE', choices: ['on', 'off'], description: 'Set the state of the feature flag show-beta-banner')
+    choice(
+      name: 'FLAG_STATE',
+      choices: ['on', 'off'],
+      description: '''Feature Flag: show-beta-banner
+Toggles the beta message visibility in app response.
+
+🟢 on  → Show beta banner message
+🔴 off → Hide banner, send default only'''
+    )
   }
+ 
 
   environment {
     IMAGE_NAME = "my-microservice:latest"
   }
 
   stages {
+    // Pull source code
     stage('Checkout') {
       steps {
         git branch: 'main', url: 'https://github.com/aithrien-of-ravenholdt/my-microservice.git'
       }
     }
 
+    // Toggle feature flag remotely before deploy
     stage('Toggle Feature Flag') {
       steps {
         script {
@@ -34,12 +49,14 @@ pipeline {
       }
     }
 
+    // Install project dependencies
     stage('Install dependencies') {
       steps {
         sh 'npm install'
       }
     }
 
+    // Lint and archive static analysis results
     stage('Lint') {
       steps {
         sh 'npm run lint > eslint-report.txt || true'
@@ -47,6 +64,7 @@ pipeline {
       }
     }
 
+    // Run tests and capture test results
     stage('Run Tests') {
       steps {
         sh '''
@@ -56,18 +74,21 @@ pipeline {
       }
     }
 
+    // Publish test output in JUnit format
     stage('Publish Test Results') {
       steps {
         junit 'test-results/junit.xml'
       }
     }
 
+    // Build container image
     stage('Build Docker Image') {
       steps {
         sh 'docker build -t $IMAGE_NAME .'
       }
     }
 
+    // Authenticate with Docker Hub
     stage('Docker Login') {
       steps {
         withCredentials([usernamePassword(
@@ -82,6 +103,7 @@ pipeline {
       }
     }
 
+    // Tag and push image to registry
     stage('Tag & Push Docker Image') {
       steps {
         withCredentials([usernamePassword(
@@ -97,6 +119,7 @@ pipeline {
       }
     }
 
+    // Confirm Kubernetes access before deploying
     stage('Verify Kube Access') {
       steps {
         sh 'kubectl config current-context || echo "❌ No Kube context loaded"'
@@ -104,6 +127,7 @@ pipeline {
       }
     }
 
+    // Deploy microservice with Helm
     stage('Helm Deploy') {
       steps {
         echo "Deploying with Helm..."
@@ -111,6 +135,7 @@ pipeline {
       }
     }
 
+    // Wait until the app pod is marked ready
     stage('Wait for Pod Readiness') {
       steps {
         echo "⏳ Waiting for my-microservice pod to be ready..."
@@ -118,6 +143,20 @@ pipeline {
       }
     }
 
+    // Fetch rendered HTML response from root route
+    stage('Capture Rendered App Output') {
+      steps {
+        echo "📥 Fetching actual app response from root route..."
+        sh '''
+          echo "<pre>" > rendered-output.html
+          curl -s http://localhost:8888 >> rendered-output.html
+          echo "</pre>" >> rendered-output.html
+        '''
+        archiveArtifacts artifacts: 'rendered-output.html', fingerprint: true
+      }
+    }
+
+    // Log and store Unleash feature flag state
     stage('Log All Feature Flags') {
       steps {
         script {
@@ -138,7 +177,8 @@ pipeline {
         }
       }
     }
-    
+
+    // Simple health check via curl with rollback if 200 not received
     stage('Health Check & Auto-Rollback') {
       steps {
         script {
@@ -162,19 +202,9 @@ pipeline {
         }
       }
     }
-    
-    stage('Capture Rendered App Output') {
-      steps {
-        echo "📥 Fetching actual app response from root route..."
-        sh '''
-          echo "<pre>" > rendered-output.html
-          curl -s http://localhost:8888 >> rendered-output.html
-          echo "</pre>" >> rendered-output.html
-        '''
-        archiveArtifacts artifacts: 'rendered-output.html', fingerprint: true
-      }
-    }
+  }
 
+  // Cleanup hook
   post {
     always {
       sh 'docker stop microservice || true'
