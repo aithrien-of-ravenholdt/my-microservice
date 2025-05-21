@@ -200,7 +200,7 @@ stage('Lint') {
 
 ---
 
-### 🎚️ Part 7: Unleash Feature Flags
+### 🚩 Part 7: Unleash Integration
 
 #### 7A. Installation & Setup
 
