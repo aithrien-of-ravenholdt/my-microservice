@@ -96,7 +96,7 @@ pipeline {
     stage('Wait for Pod Readiness') {
       steps {
         echo "⏳ Waiting for my-microservice pod to be ready..."
-        sh 'kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=my-microservice --timeout=60s'
+        sh 'kubectl wait --for=condition=ready pod -l app.kubernetes.io/instance=my-microservice --timeout=60s'
       }
     }
     
