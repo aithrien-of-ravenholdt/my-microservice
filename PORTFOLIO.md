@@ -124,7 +124,7 @@ The pipeline captures this behavior by:
 - Saving the HTML response to `rendered-output.html`
 - Archiving it for visual inspection via Jenkins UI
 
-This lets stakeholders **see the real app output change** based on the feature flag — showcasing live control over production behavior via CI.
+This lets stakeholders **see the real application output change** in response to a feature flag toggle, showcasing controlled rollouts, experimentation, and progressive delivery.
 
 ---
 
