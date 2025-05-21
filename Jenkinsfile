@@ -168,18 +168,18 @@ pipeline {
               returnStdout: true
             ).trim()
 
-            if (!output.contains("CI/CD Release Engineering Lab")) {
+            if (!output.contains("Releasing smarter")) {
               echo "Output not ready yet:\n${output}"
-              error("App not fully ready")
+              error("Flag not reflected yet")
             }
 
-            writeFile file: 'feature-output.txt', text: output
+            writeFile file: 'feature-output.log', text: output
           }
 
           echo "Rendered App Output:"
-          sh 'cat feature-output.txt'
+          sh 'cat feature-output.log'
 
-          archiveArtifacts artifacts: 'feature-output.txt', fingerprint: true
+          archiveArtifacts artifacts: 'feature-output.log', fingerprint: true
         }
       }
     }
