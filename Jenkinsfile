@@ -85,20 +85,6 @@ pipeline {
         sh 'kubectl get nodes || echo "❌ Cluster unreachable"'
       }
     }
-
-    stage('Helm Deploy') {
-      steps {
-        echo "Deploying with Helm..."
-        sh 'helm upgrade --install my-microservice ./my-microservice-chart'
-      }
-    }
-    
-    stage('Wait for Pod Readiness') {
-      steps {
-        echo "⏳ Waiting for my-microservice pod to be ready..."
-        sh 'kubectl wait --for=condition=ready pod -l app.kubernetes.io/instance=my-microservice --timeout=60s'
-      }
-    }
     
     stage('Toggle Feature Flag') {
       steps {
@@ -115,6 +101,20 @@ pipeline {
             """
           }
         }
+      }
+    }    
+
+    stage('Helm Deploy') {
+      steps {
+        echo "Deploying with Helm..."
+        sh 'helm upgrade --install my-microservice ./my-microservice-chart'
+      }
+    }
+    
+    stage('Wait for Pod Readiness') {
+      steps {
+        echo "⏳ Waiting for my-microservice pod to be ready..."
+        sh 'kubectl wait --for=condition=ready pod -l app.kubernetes.io/instance=my-microservice --timeout=60s'
       }
     }
 
