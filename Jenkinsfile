@@ -175,15 +175,6 @@ pipeline {
       }
     }
 
-    stage('Capture App Logs') {
-      steps {
-        echo "📦 Capturing runtime logs from deployed pod..."
-        sh 'kubectl logs -l app.kubernetes.io/instance=my-microservice --tail=100 > app-runtime.log'
-        archiveArtifacts artifacts: 'app-runtime.log', fingerprint: true
-      }
-    }
-  }
-
   post {
     always {
       sh 'docker stop microservice || true'
