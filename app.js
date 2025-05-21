@@ -44,8 +44,13 @@ app.listen(PORT, () => {
 });
 
 // Optional log to confirm SDK init
-unleash.on('ready', () => {
+unleash.on('ready', async () => {
   console.log('✅ Unleash is ready');
+
+  // Force an immediate flag refresh
+  await unleash.repository.fetch();
+
+  console.log('🔄 Unleash flags force-refreshed');
 });
 
 unleash.on('error', console.error);
