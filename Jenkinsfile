@@ -161,7 +161,19 @@ pipeline {
           }
         }
       }
-    }    
+    }
+    
+    stage('Capture Rendered App Output') {
+      steps {
+        echo "📥 Fetching actual app response from root route..."
+        sh '''
+          echo "<pre>" > rendered-output.html
+          curl -s http://localhost:8888 >> rendered-output.html
+          echo "</pre>" >> rendered-output.html
+        '''
+        archiveArtifacts artifacts: 'rendered-output.html', fingerprint: true
+      }
+    }
 
     stage('Capture App Logs') {
       steps {
