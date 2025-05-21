@@ -15,6 +15,7 @@ const unleash = initialize({
   url: 'http://localhost:4242/api/',
   appName: 'cicd-lab-app',
   environment: 'development',
+  refreshInterval: 2, // ← refresh flags every 2 seconds
   customHeaders: {
     Authorization: process.env.UNLEASH_API_TOKEN,
   },
