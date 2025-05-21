@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000;
 
 // Initialize Unleash SDK
 const unleash = initialize({
-  url: 'http://localhost:4242/api/',
+  url: 'http://unleash-server:4242/api/',
   appName: 'cicd-lab-app',
   environment: 'development',
   refreshInterval: 2,

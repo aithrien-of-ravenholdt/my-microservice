@@ -138,6 +138,30 @@ pipeline {
         }
       }
     }
+    
+    stage('Health Check & Auto-Rollback') {
+      steps {
+        script {
+          echo "Running basic health check..."
+
+          sh 'kubectl port-forward svc/my-microservice-my-microservice-chart 8888:3000 &'
+          sleep 5
+
+          def healthCode = sh(
+            script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8888/health',
+            returnStdout: true
+          ).trim()
+
+          if (healthCode != '200') {
+            echo "❌ Health check failed — rolling back"
+            sh 'helm rollback my-microservice 1'
+            error("Deployment failed health check. Rolled back.")
+          } else {
+            echo "✅ Health check passed — app is healthy"
+          }
+        }
+      }
+    }    
 
     stage('Capture App Logs') {
       steps {
