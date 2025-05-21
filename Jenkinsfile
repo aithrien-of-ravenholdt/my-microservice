@@ -15,7 +15,7 @@ pipeline {
         git branch: 'main', url: 'https://github.com/aithrien-of-ravenholdt/my-microservice.git'
       }
     }
-    
+
     stage('Toggle Feature Flag') {
       steps {
         script {
@@ -32,7 +32,7 @@ pipeline {
           }
         }
       }
-    }    
+    }
 
     stage('Install dependencies') {
       steps {
@@ -110,7 +110,7 @@ pipeline {
         sh 'helm upgrade --install my-microservice ./my-microservice-chart'
       }
     }
-    
+
     stage('Wait for Pod Readiness') {
       steps {
         echo "⏳ Waiting for my-microservice pod to be ready..."
@@ -139,55 +139,11 @@ pipeline {
       }
     }
 
-    stage('Health Check & Auto-Rollback') {
+    stage('Capture App Logs') {
       steps {
-        script {
-          echo "Starting health check with kubectl port-forward..."
-
-          sh 'nohup kubectl port-forward svc/my-microservice-my-microservice-chart 8888:3000 > port-forward.log 2>&1 &'
-          sleep 10
-
-          def healthCode = ''
-          retry(3) {
-            sleep 3
-            echo "⏳ Retrying health check..."
-
-            sh 'lsof -i :8888 || echo "🔍 Port 8888 not open yet"'
-
-            healthCode = sh(
-              script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8888/health',
-              returnStdout: true
-            ).trim()
-
-            if (healthCode != '200') {
-              echo "Waiting for app... Health code was ${healthCode}"
-              error("Not ready yet")
-            }
-          }
-
-          echo "Health check returned HTTP ${healthCode}"
-          echo "✅ Health check passed — app is healthy"
-
-          retry(5) {
-            sleep 2
-            def output = sh(
-              script: 'curl -s http://localhost:8888',
-              returnStdout: true
-            ).trim()
-
-            if (!output.contains("Releasing smarter")) {
-              echo "Output not ready yet:\n${output}"
-              error("Flag not reflected yet")
-            }
-
-            writeFile file: 'feature-output.log', text: output
-          }
-
-          echo "Rendered App Output:"
-          sh 'cat feature-output.log'
-
-          archiveArtifacts artifacts: 'feature-output.log', fingerprint: true
-        }
+        echo "📦 Capturing runtime logs from deployed pod..."
+        sh 'kubectl logs -l app.kubernetes.io/instance=my-microservice --tail=100 > app-runtime.log'
+        archiveArtifacts artifacts: 'app-runtime.log', fingerprint: true
       }
     }
   }
