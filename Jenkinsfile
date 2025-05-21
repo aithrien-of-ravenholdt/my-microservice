@@ -92,7 +92,14 @@ pipeline {
         sh 'helm upgrade --install my-microservice ./my-microservice-chart'
       }
     }
-
+    
+    stage('Wait for Pod Readiness') {
+      steps {
+        echo "⏳ Waiting for my-microservice pod to be ready..."
+        sh 'kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=my-microservice --timeout=60s'
+      }
+    }
+    
     stage('Toggle Feature Flag') {
       steps {
         script {
