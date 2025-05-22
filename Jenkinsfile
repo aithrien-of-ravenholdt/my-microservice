@@ -204,13 +204,15 @@ Toggles the beta message visibility in app response.
           sh '''
             UNLEASH_URL=http://localhost:4242/api \
             UNLEASH_API_TOKEN=$UNLEASH_ADMIN_TOKEN \
-            nohup node app.js & sleep 5
+            nohup node app.js > app.log 2>&1 & echo $! > app.pid
+
+            sleep 5
 
             echo "<pre>" > rendered-output.html
             curl -s http://localhost:8888 >> rendered-output.html
             echo "</pre>" >> rendered-output.html
 
-            pkill -f "node app.js"
+            kill $(cat app.pid)
           '''
           archiveArtifacts artifacts: 'rendered-output.html', fingerprint: true
         }

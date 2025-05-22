@@ -15,7 +15,7 @@ const unleash = initialize({
   appName: 'cicd-lab-app',
   environment: 'development',
   refreshInterval: 2,
-  backupPath: './unleash-cache.json', // Writable path
+  backupPath: './unleash-backup.json', // Writable path
   customHeaders: {
     Authorization: process.env.UNLEASH_API_TOKEN || 'default-token',
   },
