@@ -1,5 +1,5 @@
 // CI/CD Lab App — Express server with Unleash feature flag integration
-// Responds to root route with flag-controlled message, logs toggle state
+// Supports both local and Kubernetes deployments with environment-based config
 
 require('dotenv').config();
 
@@ -9,16 +9,15 @@ const { initialize } = require('unleash-client');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Initialize Unleash SDK
-const { initialize } = require('unleash-client');
-
+// Initialize Unleash SDK (uses env vars if present, defaults to K8s config)
 const unleash = initialize({
-  url: process.env.UNLEASH_URL || 'http://unleash-server:4242/api',
-  appName: 'my-microservice',
+  url: process.env.UNLEASH_URL || 'http://unleash-server:4242/api/',
+  appName: 'cicd-lab-app',
   environment: 'development',
+  refreshInterval: 2,
   customHeaders: {
-    Authorization: process.env.UNLEASH_API_TOKEN || 'default-token'
-  }
+    Authorization: process.env.UNLEASH_API_TOKEN || 'default-token',
+  },
 });
 
 // Log when Unleash SDK is ready and fetch initial toggles
