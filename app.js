@@ -10,14 +10,15 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Initialize Unleash SDK
+const { initialize } = require('unleash-client');
+
 const unleash = initialize({
-  url: 'http://unleash-server:4242/api/',
-  appName: 'cicd-lab-app',
+  url: process.env.UNLEASH_URL || 'http://unleash-server:4242/api',
+  appName: 'my-microservice',
   environment: 'development',
-  refreshInterval: 2,
   customHeaders: {
-    Authorization: process.env.UNLEASH_API_TOKEN,
-  },
+    Authorization: process.env.UNLEASH_API_TOKEN || 'default-token'
+  }
 });
 
 // Log when Unleash SDK is ready and fetch initial toggles

@@ -200,14 +200,20 @@ Toggles the beta message visibility in app response.
     // Fetch rendered HTML response from root route
     stage('Capture Rendered App Output') {
       steps {
-        sh '''
-          nohup node app.js & sleep 5
-          echo "<pre>" > rendered-output.html
-          curl -s http://localhost:8888 >> rendered-output.html
-          echo "</pre>" >> rendered-output.html
-          pkill -f "node app.js"
-        '''
-        archiveArtifacts artifacts: 'rendered-output.html', fingerprint: true
+        withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
+          sh '''
+            UNLEASH_URL=http://localhost:4242/api \
+            UNLEASH_API_TOKEN=$UNLEASH_ADMIN_TOKEN \
+            nohup node app.js & sleep 5
+
+            echo "<pre>" > rendered-output.html
+            curl -s http://localhost:8888 >> rendered-output.html
+            echo "</pre>" >> rendered-output.html
+
+            pkill -f "node app.js"
+          '''
+          archiveArtifacts artifacts: 'rendered-output.html', fingerprint: true
+        }
       }
     }
   }
@@ -219,4 +225,3 @@ Toggles the beta message visibility in app response.
     }
   }
 }
- 
