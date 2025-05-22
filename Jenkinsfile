@@ -1,11 +1,21 @@
 // Jenkinsfile for CI/CD Release Engineering Lab
 // Includes: dual-mode logic for CI/CD pipeline and feature flag showcase
 
-// Infer job mode based on job name
-def isToggleJob = env.JOB_NAME?.toLowerCase()?.contains('toggle-flag')
-
 pipeline {
   agent any
+
+  // Feature flag toggle: user can control 'show-beta-banner' from Jenkins UI
+  parameters {
+    choice(
+      name: 'FLAG_STATE',
+      choices: ['on', 'off'],
+      description: '''Feature Flag: show-beta-banner
+Toggles the beta message visibility in app response.
+
+🟢 on  → Show beta banner message
+🔴 off → Hide banner, send default only'''
+    )
+  }
 
   environment {
     IMAGE_NAME = "my-microservice:latest"
@@ -19,23 +29,10 @@ pipeline {
       }
     }
 
-    // Feature flag toggle: user can control 'show-beta-banner' from Jenkins UI
-    parameters {
-      choice(
-        name: 'FLAG_STATE',
-        choices: ['on', 'off'],
-        description: '''Feature Flag: show-beta-banner
-Toggles the beta message visibility in app response.
-
-🟢 on  → Show beta banner message
-🔴 off → Hide banner, send default only'''
-      )
-    }
-
     // Toggle feature flag remotely before deploy
     stage('Toggle Feature Flag') {
       when {
-        expression { isToggleJob }
+        expression { env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
       }
       steps {
         script {
@@ -63,7 +60,7 @@ Toggles the beta message visibility in app response.
     // Lint and archive static analysis results
     stage('Lint') {
       when {
-        expression { !isToggleJob }
+        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
       }
       steps {
         sh 'npm run lint > eslint-report.txt || true'
@@ -74,7 +71,7 @@ Toggles the beta message visibility in app response.
     // Run tests and capture test results
     stage('Run Tests') {
       when {
-        expression { !isToggleJob }
+        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
       }
       steps {
         sh 'mkdir -p test-results && npm test || true'
@@ -84,7 +81,7 @@ Toggles the beta message visibility in app response.
     // Publish test output in JUnit format
     stage('Publish Test Results') {
       when {
-        expression { !isToggleJob }
+        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
       }
       steps {
         junit 'test-results/junit.xml'
@@ -94,7 +91,7 @@ Toggles the beta message visibility in app response.
     // Build container image
     stage('Build Docker Image') {
       when {
-        expression { !isToggleJob }
+        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
       }
       steps {
         sh 'docker build -t $IMAGE_NAME .'
@@ -104,7 +101,7 @@ Toggles the beta message visibility in app response.
     // Authenticate with Docker Hub
     stage('Docker Login') {
       when {
-        expression { !isToggleJob }
+        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
       }
       steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
@@ -116,7 +113,7 @@ Toggles the beta message visibility in app response.
     // Tag and push image to registry
     stage('Tag & Push Docker Image') {
       when {
-        expression { !isToggleJob }
+        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
       }
       steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
@@ -129,7 +126,7 @@ Toggles the beta message visibility in app response.
     // Confirm Kubernetes access before deploying
     stage('Verify Kube Access') {
       when {
-        expression { !isToggleJob }
+        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
       }
       steps {
         sh 'kubectl config current-context || echo "❌ No Kube context loaded"'
@@ -140,7 +137,7 @@ Toggles the beta message visibility in app response.
     // Deploy microservice with Helm
     stage('Helm Deploy') {
       when {
-        expression { !isToggleJob }
+        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
       }
       steps {
         sh 'helm upgrade --install my-microservice ./my-microservice-chart'
@@ -150,7 +147,7 @@ Toggles the beta message visibility in app response.
     // Wait until the app pod is marked ready
     stage('Wait for Pod Readiness') {
       when {
-        expression { !isToggleJob }
+        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
       }
       steps {
         sh 'kubectl wait --for=condition=ready pod -l app.kubernetes.io/instance=my-microservice --timeout=60s'
@@ -175,7 +172,7 @@ Toggles the beta message visibility in app response.
     // Simple health check via curl with rollback if 200 not received
     stage('Health Check & Auto-Rollback') {
       when {
-        expression { !isToggleJob }
+        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
       }
       steps {
         script {
@@ -222,3 +219,4 @@ Toggles the beta message visibility in app response.
     }
   }
 }
+ 
