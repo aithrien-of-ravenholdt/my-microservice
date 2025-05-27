@@ -200,63 +200,61 @@ stage('Lint') {
 
 ---
 
+
 ### 🚩 Part 7: Unleash Integration
 
-#### 7A. Installation & Setup
+This lab integrates **Unleash** as a runtime feature flag manager, while also demonstrating a deployment-time configuration change using the `BETA_BANNER_ENABLED` parameter.
 
-1. **Add Unleash Helm Repo and install:**
+#### Installation & Setup
+
+Add the Unleash Helm repository and install the Unleash server:
 ```bash
 helm repo add unleash https://docs.getunleash.io/helm-charts
 helm repo update
 helm install unleash-server unleash/unleash --set postgresql.enabled=true
 ```
 
-2. **Port-forward Unleash UI locally:**
+Port-forward the Unleash UI locally:
 ```bash
 kubectl port-forward svc/unleash-server 4242:4242 --address 0.0.0.0
 ```
 
-3. **Access Unleash at:**  
-[http://localhost:4242](http://localhost:4242)
+Access the Unleash UI at [http://localhost:4242](http://localhost:4242).
 
-4. **Default Credentials**
-
-- **Username:** `admin`  
+Default credentials:
+- **Username:** `admin`
 - **Password:** `unleash4all`
 
-These credentials are baked into the default container (ideal for local labs). No signup is needed.
+#### Generate an Admin API Token
 
-#### 7B. Generate an Admin API Token
-
-1. Log into Unleash UI  
-2. Go to your **user profile → API Tokens**  
-3. Choose:  
-   - **Type:** Admin  
-   - **Project:** default  
-   - **Environment:** development  
-   - **Expiration:** (suggested: Never)  
-4. Copy the token to use in `.env` as:
+1. Log into the Unleash UI.
+2. Go to your **user profile → API Tokens**.
+3. Create a new token with:
+   - **Type:** Admin
+   - **Project:** default
+   - **Environment:** development
+   - **Expiration:** Never (suggested for local testing)
+4. Copy the generated token and store it in your `.env` file:
 ```
 UNLEASH_API_TOKEN=your-token-here
 ```
 
-#### 7C. Create a Feature Flag
+#### Create the Feature Flag
 
-1. In **Projects → default**, click **"New Feature Toggle"**  
-2. Name it: `show-beta-banner`  
-3. Set type: `release`  
-4. Enable it for the `development` environment  
-5. Apply the **Flexible Rollout** strategy:  
-   - Stickiness: `default`  
+1. In the Unleash UI, navigate to **Projects → default → New Feature Toggle**.
+2. Name it: `show-beta-banner`.
+3. Set the type to `release` and enable it for the `development` environment.
+4. Use the **Flexible Rollout** strategy:
+   - Stickiness: `default`
    - Rollout: `100%`
 
-#### 7D. Jenkins Integration
+#### Deployment-Time Configuration Showcase in Jenkins
 
-Jenkins will:  
-- Read the value of `FLAG_STATE` (on/off)  
-- Call the Unleash API to toggle the flag  
-- Deploy the app and verify behavior based on the toggle  
-- Capture the actual HTML response and log it
+In this lab, the pipeline uses a **deployment-time configuration parameter** called `BETA_BANNER_ENABLED` (`on` or `off`) to simulate changing application behavior:
+
+- Jenkins reads this parameter from the pipeline UI.
+- Jenkins **calls the Unleash API** to set the beta banner config (`show-beta-banner`).
+- This change takes effect **at deployment time** — it’s not a runtime feature toggle in this scenario.
 
 Jenkins uses this command internally:
 ```bash
@@ -265,13 +263,15 @@ curl -X POST http://localhost:4242/api/admin/projects/default/features/show-beta
   -H "Content-Type: application/json"
 ```
 
-The flag result is reflected in your app response:
+The deployed application **fetches this value on boot** and uses it to decide whether to show the beta banner:
 ```
 Welcome to the CI/CD Release Engineering Lab 🚀
 🧪 Beta Feature: Releasing smarter, one flag at a time.
 ```
 
-When disabled, the second line is hidden.
+When `BETA_BANNER_ENABLED` is set to `off`, the second line is hidden.
+
+> ⚠️ **Note:** In production, toggling feature flags would be done dynamically at runtime using Unleash (no redeploy required). Here, we demonstrate a deploy-time configuration change for clarity and to showcase Jenkins pipeline flexibility.
 
 ---
 

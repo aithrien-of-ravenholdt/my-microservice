@@ -109,23 +109,22 @@ This demonstrates:
 
 ---
 
-### 🚩 Unleash Feature Flags Integration
+### 🚩 Unleash Integration and Deployment-Time Configuration
 
-Unleash is integrated with both the Node.js microservice and the Jenkins pipeline to support runtime toggling of application behavior via feature flags.
+This lab integrates **Unleash** as a runtime feature flag manager, while also demonstrating a deployment-time configuration change using `BETA_BANNER_ENABLED`.
 
-- The app uses the Unleash Node SDK to enable or disable parts of its output.
-- Jenkins passes a `FLAG_STATE` parameter (`on` or `off`) during the pipeline run.
-- Jenkins authenticates via a reusable admin token and calls the Unleash API to update the flag state.
-- The deployed application fetches that flag on boot, influencing the response returned on the root route (`/`).
+- The Node.js app uses the Unleash Node SDK to **dynamically** toggle runtime features (no redeploy needed).
+- In this pipeline, we showcase a **deployment-time config change**: the beta banner toggle (`BETA_BANNER_ENABLED`), controlled via Jenkins pipeline parameters.
+- Jenkins authenticates via an admin API token to update the Unleash config for the `show-beta-banner` toggle **at deployment time**.
+- The app **reads this config at boot**, showing or hiding the beta banner accordingly.
 
-The pipeline captures this behavior by:
-
+Jenkins captures the final output by:
 - Calling `curl http://localhost:8888` after deployment
-- Saving the HTML response to `rendered-output.html`
-- Archiving it for visual inspection via Jenkins UI
+- Saving the rendered HTML response to `rendered-output.html`
+- Archiving it for visual inspection in the Jenkins UI
 
-This lets stakeholders **see the real application output change** in response to a feature flag toggle, showcasing controlled rollouts, experimentation, and progressive delivery.
-
+This demonstrates how controlled configuration changes (like beta banners) can be managed via the pipeline, while real runtime toggling happens **inside the app itself** using Unleash.
+ 
 ---
 
 ## 🐳 DockerHub Integration
