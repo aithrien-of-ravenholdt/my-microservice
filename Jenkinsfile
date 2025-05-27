@@ -1,19 +1,22 @@
 // Jenkinsfile for CI/CD Release Engineering Lab
-// Includes: dual-mode logic for CI/CD pipeline and feature flag showcase
+// Includes: deployment-time configuration change for beta banner (via BETA_BANNER_ENABLED param),
+// quality gates, build, deployment, and observability.
 
 pipeline {
   agent any
 
-  // Feature flag toggle: user can control 'show-beta-banner' from Jenkins UI
+  // Deployment-time configuration: user can control 'show-beta-banner' from Jenkins UI
   parameters {
     choice(
-      name: 'FLAG_STATE',
+      name: 'BETA_BANNER_ENABLED',
       choices: ['on', 'off'],
-      description: '''Feature Flag: show-beta-banner
-Toggles the beta message visibility in app response.
+      description: '''Beta Banner Deployment Setting
+Controls whether the beta banner is shown in app response.
 
-🟢 on  → Show beta banner message
-🔴 off → Hide banner, send default only'''
+✅ on  → Show the beta banner message
+❌ off → Hide the beta banner (show default only)
+
+Note: This is a deployment-time configuration change, not a runtime feature flag.'''
     )
   }
 
@@ -29,20 +32,18 @@ Toggles the beta message visibility in app response.
       }
     }
 
-    // Toggle feature flag remotely before deploy
-    stage('Toggle Feature Flag') {
-      when {
-        expression { env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
-      }
+    // Apply deployment-time configuration change for beta banner
+    stage('Set Beta Banner Config') {
       steps {
         script {
-          echo "Setting Unleash flag 'show-beta-banner' to ${params.FLAG_STATE}"
-          def action = (params.FLAG_STATE == 'on') ? 'on' : 'off'
+          echo "Setting beta banner configuration to ${params.BETA_BANNER_ENABLED}"
+
+          def action = (params.BETA_BANNER_ENABLED == 'on') ? 'on' : 'off'
 
           withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
             sh """
               curl -X POST http://localhost:4242/api/admin/projects/default/features/show-beta-banner/environments/development/${action} \\
-                -H "Authorization: Bearer $UNLEASH_ADMIN_TOKEN" \\
+                -H "Authorization: Bearer \$UNLEASH_ADMIN_TOKEN" \\
                 -H "Content-Type: application/json"
             """
           }
@@ -59,9 +60,6 @@ Toggles the beta message visibility in app response.
 
     // Lint and archive static analysis results
     stage('Lint') {
-      when {
-        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
-      }
       steps {
         sh 'npm run lint > eslint-report.txt || true'
         archiveArtifacts artifacts: 'eslint-report.txt', fingerprint: true
@@ -70,19 +68,16 @@ Toggles the beta message visibility in app response.
 
     // Run tests and capture test results
     stage('Run Tests') {
-      when {
-        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
-      }
       steps {
-        sh 'mkdir -p test-results && npm test || true'
+        sh '''
+          mkdir -p test-results
+          npm test || true
+        '''
       }
     }
 
     // Publish test output in JUnit format
     stage('Publish Test Results') {
-      when {
-        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
-      }
       steps {
         junit 'test-results/junit.xml'
       }
@@ -90,9 +85,6 @@ Toggles the beta message visibility in app response.
 
     // Build container image
     stage('Build Docker Image') {
-      when {
-        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
-      }
       steps {
         sh 'docker build -t $IMAGE_NAME .'
       }
@@ -100,34 +92,37 @@ Toggles the beta message visibility in app response.
 
     // Authenticate with Docker Hub
     stage('Docker Login') {
-      when {
-        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
-      }
       steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-          sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+        withCredentials([usernamePassword(
+          credentialsId: 'dockerhub-creds',
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
+          sh '''
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+          '''
         }
       }
     }
 
     // Tag and push image to registry
     stage('Tag & Push Docker Image') {
-      when {
-        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
-      }
       steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-          sh 'docker tag my-microservice:latest "$DOCKER_USER/my-microservice:latest"'
-          sh 'docker push "$DOCKER_USER/my-microservice:latest"'
+        withCredentials([usernamePassword(
+          credentialsId: 'dockerhub-creds',
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
+          sh '''
+            docker tag my-microservice:latest "$DOCKER_USER/my-microservice:latest"
+            docker push "$DOCKER_USER/my-microservice:latest"
+          '''
         }
       }
     }
 
     // Confirm Kubernetes access before deploying
     stage('Verify Kube Access') {
-      when {
-        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
-      }
       steps {
         sh 'kubectl config current-context || echo "❌ No Kube context loaded"'
         sh 'kubectl get nodes || echo "❌ Cluster unreachable"'
@@ -136,44 +131,44 @@ Toggles the beta message visibility in app response.
 
     // Deploy microservice with Helm
     stage('Helm Deploy') {
-      when {
-        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
-      }
       steps {
+        echo "Deploying with Helm..."
         sh 'helm upgrade --install my-microservice ./my-microservice-chart'
       }
     }
 
     // Wait until the app pod is marked ready
     stage('Wait for Pod Readiness') {
-      when {
-        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
-      }
       steps {
+        echo "⏳ Waiting for my-microservice pod to be ready..."
         sh 'kubectl wait --for=condition=ready pod -l app.kubernetes.io/instance=my-microservice --timeout=60s'
       }
     }
 
-    // Log and store Unleash feature flag state
+    // Log and store all feature flag states from Unleash
     stage('Log All Feature Flags') {
       steps {
-        withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
-          sh '''
-            curl -s http://localhost:4242/api/admin/projects/default/features \
-              -H "Authorization: Bearer $UNLEASH_ADMIN_TOKEN" \
-              -H "Content-Type: application/json" > unleash-flags.json
-            cat unleash-flags.json
-          '''
+        script {
+          echo "Fetching current feature flags from Unleash..."
+
+          withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
+            sh '''
+              curl -s http://localhost:4242/api/admin/projects/default/features \
+                -H "Authorization: Bearer $UNLEASH_ADMIN_TOKEN" \
+                -H "Content-Type: application/json" > unleash-flags.json
+
+              echo "🔍 Feature Flags Snapshot:"
+              cat unleash-flags.json
+            '''
+          }
+
+          archiveArtifacts artifacts: 'unleash-flags.json', fingerprint: true
         }
-        archiveArtifacts artifacts: 'unleash-flags.json', fingerprint: true
       }
     }
 
     // Simple health check via curl with rollback if 200 not received
     stage('Health Check & Auto-Rollback') {
-      when {
-        expression { !env.JOB_NAME?.toLowerCase()?.contains('toggle-flag') }
-      }
       steps {
         script {
           echo "Running basic health check..."
@@ -196,28 +191,19 @@ Toggles the beta message visibility in app response.
         }
       }
     }
-
+  
     // Fetch rendered HTML response from root route
     stage('Capture Rendered App Output') {
       steps {
-        withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
-          sh '''
-            UNLEASH_URL=http://localhost:4242/api \
-            UNLEASH_API_TOKEN=$UNLEASH_ADMIN_TOKEN \
-            nohup node app.js > app.log 2>&1 & echo $! > app.pid
-
-            sleep 5
-
-            echo "<pre>" > rendered-output.html
-            curl -s http://localhost:8888 >> rendered-output.html
-            echo "</pre>" >> rendered-output.html
-
-            kill $(cat app.pid)
-          '''
-          archiveArtifacts artifacts: 'rendered-output.html', fingerprint: true
-        }
+        echo "📥 Fetching actual app response from root route..."
+        sh '''
+          echo "<pre>" > rendered-output.html
+          curl -s http://localhost:8888 >> rendered-output.html
+          echo "</pre>" >> rendered-output.html
+        '''
+        archiveArtifacts artifacts: 'rendered-output.html', fingerprint: true
       }
-    }
+    }  
   }
 
   // Cleanup hook

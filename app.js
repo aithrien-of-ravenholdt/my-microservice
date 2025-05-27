@@ -1,5 +1,6 @@
-// CI/CD Lab App — Express server with Unleash feature flag integration
-// Supports both local and Kubernetes deployments with environment-based config
+// CI/CD Lab App — Express server with runtime feature flag integration via Unleash
+// Responds to root route with a deploy-time configuration-based beta banner (BETA_BANNER_ENABLED),
+// while also supporting runtime feature toggles for other features.
 
 require('dotenv').config();
 
@@ -9,15 +10,14 @@ const { initialize } = require('unleash-client');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Initialize Unleash SDK (uses env vars if present, defaults to K8s config)
+// Initialize Unleash SDK — use env var override if present for portability
 const unleash = initialize({
   url: process.env.UNLEASH_URL || 'http://unleash-server:4242/api/',
   appName: 'cicd-lab-app',
   environment: 'development',
   refreshInterval: 2,
-  backupPath: './unleash-backup.json', // Writable path
   customHeaders: {
-    Authorization: process.env.UNLEASH_API_TOKEN || 'default-token',
+    Authorization: process.env.UNLEASH_API_TOKEN,
   },
 });
 
