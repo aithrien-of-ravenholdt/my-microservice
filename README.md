@@ -26,15 +26,19 @@ The real focus of this lab is not the app itself, but the automated infrastructu
 
 ```
 my-microservice/
-├── index.js
+├── app.js
 ├── Dockerfile
 ├── package.json
+├── package-lock.json
 ├── test/
 │   └── hello.test.js
+├── test-results/
+│   └── junit.xml
 ├── my-microservice-chart/
 │   ├── Chart.yaml
 │   ├── values.yaml
 │   └── templates/
+├── eslint.config.mjs
 └── Jenkinsfile
 ```
 
@@ -52,6 +56,7 @@ my-microservice/
 - Ngrok (for GitHub Webhooks)
 - Jest + jest-junit
 - ESLint
+- Trivy (Docker container)
 
 ---
 
@@ -69,15 +74,23 @@ my-microservice/
 
 1. Install Jenkins with necessary plugins  
 2. Create a freestyle pipeline pointing to your GitHub repo  
-3. Use `Jenkinsfile` to define pipeline with stages:
+3. Use the `Jenkinsfile` to define your pipeline, which includes these stages:
    - Checkout
+   - Set Beta Banner Config
    - Install dependencies
-   - Lint with ESLint
-   - Unit tests with Jest
-   - Docker build and tag
-   - DockerHub login & push
-   - Helm deploy
-   - Health check with rollback
+   - Lint (eslint-report.txt)
+   - Run Tests
+   - Publish Test Results
+   - Build Docker Image
+   - Trivy Scan (trivy-report.json)
+   - Docker Login
+   - Tag & Push Docker Image
+   - Verify Kube Access
+   - Helm Deploy
+   - Wait for Pod Readiness
+   - Log All Feature Flags (unleash-flags.json)
+   - Health Check & Auto-Rollback
+   - Capture Rendered App Output (rendered-output.html)
 
 ---
 
