@@ -109,7 +109,7 @@ This demonstrates:
 
 ---
 
-### 🚩 Unleash Integration and Deployment-Time Configuration
+## 🚩 Unleash Deployment-Time Configuration
 
 This lab integrates **Unleash** as a runtime feature flag manager, while also demonstrating a deployment-time configuration change using `BETA_BANNER_ENABLED`.
 
