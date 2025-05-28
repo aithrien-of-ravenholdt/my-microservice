@@ -325,8 +325,8 @@ stage('Trivy Scan') {
 - After the pipeline runs, the **`trivy-report.json`** file is available as a Jenkins artifact.
 - It contains a full list of detected vulnerabilities, severity, and impacted packages.
 
-> ⚠️ **Note:** In production, it’s recommended to use `--exit-code 1` to fail the pipeline if HIGH or CRITICAL vulnerabilities are found.  
-> In this lab, `--exit-code 0` allows the pipeline to continue while still archiving the security report for review.
+> ⚠️ **Note:** In this lab, `--exit-code 0` allows the pipeline to continue while still archiving the security report for review.  
+> In production, it’s recommended to use `--exit-code 1` to fail the pipeline if HIGH or CRITICAL vulnerabilities are found.
 
 ---
 
