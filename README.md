@@ -257,12 +257,12 @@ UNLEASH_API_TOKEN=your-token-here
    - Stickiness: `default`
    - Rollout: `100%`
 
-#### 7D. Deployment-Time Configuration Showcase in Jenkins
+#### 7D. Deployment-Time Configuration in Jenkins
 
 In this lab, the pipeline uses a **deployment-time configuration parameter** called `BETA_BANNER_ENABLED` (`on` or `off`) to simulate changing application behavior:
 
 - Jenkins reads this parameter from the pipeline UI.
-- Jenkins **calls the Unleash API** to set the beta banner config (`show-beta-banner`).
+- **calls the Unleash API** to set the beta banner config (`show-beta-banner`).
 - This change takes effect **at deployment time** — it’s not a runtime feature toggle in this scenario.
 
 Jenkins uses this command internally:
@@ -280,7 +280,8 @@ Welcome to the CI/CD Release Engineering Lab 🚀
 
 When `BETA_BANNER_ENABLED` is set to `off`, the second line is hidden.
 
-> ⚠️ **Note:** In production, toggling feature flags would be done dynamically at runtime using Unleash (no redeploy required). Here, we demonstrate a deploy-time configuration change for clarity and to showcase Jenkins pipeline flexibility.
+> ⚠️ **Note:** In production, toggling feature flags would be done dynamically at runtime using Unleash (no redeploy required). 
+> Here, we demonstrate a deploy-time configuration change for clarity and to showcase Jenkins pipeline flexibility.
 
 ---
 
