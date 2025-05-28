@@ -95,14 +95,8 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
       steps {
         echo "🔍 Scanning Docker image with Trivy..."
         sh '''
-          # Manually add ~/.local/bin to PATH for Jenkins agent
-          export PATH=$PATH:$HOME/.local/bin
-
-          # Run the scan
-          trivy image --exit-code 0 --severity HIGH,CRITICAL $IMAGE_NAME || true
-
-          # Save a detailed JSON report
-          trivy image --format json --output trivy-report.json $IMAGE_NAME || true
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image --exit-code 0 --severity HIGH,CRITICAL $IMAGE_NAME || true
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image --format json --output trivy-report.json $IMAGE_NAME || true
         '''
         archiveArtifacts artifacts: 'trivy-report.json', fingerprint: true
       }
