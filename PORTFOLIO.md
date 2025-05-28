@@ -41,21 +41,7 @@ This project demonstrates a complete, production-grade CI/CD pipeline built with
 6. **Runs an image scan** via Trivy
 7. **Pushes the image** to DockerHub securely via Jenkins credentials
 8. **Deploys to Kubernetes using Helm**
-9. **Toggles a configuration change### 🚩 Trivy Integration
-
-Trivy is integrated into the pipeline to **scan Docker images** for known vulnerabilities in base images and application dependencies.
-
-- The pipeline includes a **Trivy Scan stage** that runs directly inside Jenkins using the official Trivy Docker image.
-- No local installation of Trivy is needed — this follows cloud-native best practices, ensuring portability and no dependency on local tools.
-- The stage uses volume mounts (`-v $(pwd):/report/`) to generate a **`trivy-report.json`** in the Jenkins workspace.
-- The report is archived as a pipeline artifact for detailed inspection of vulnerabilities.
-
-The scan is configured with:
-- `--exit-code 0`: The pipeline **always continues**, even if vulnerabilities are found (useful in lab environments).
-- `--exit-code 1`: The pipeline **fails** if HIGH or CRITICAL vulnerabilities are found — this is the recommended setting in production environments.
-
-This demonstrates how to integrate **security scanning directly into CI/CD pipelines**, with control over enforcement policies and full traceability of scan results.
-  via Unleash** based on a pipeline parameter
+9. **Toggles a configuration change** via Unleash 
 10. **Exposes the service using `kubectl port-forward`**
 11. **Performs a live health check via `curl`**
 12. **Rolls back automatically** if the health check fails
@@ -136,7 +122,9 @@ Jenkins captures the final output by:
 - Saving the rendered HTML response to `rendered-output.html`
 - Archiving it for visual inspection in the Jenkins UI
 
-This demonstrates how controlled configuration changes (like beta banners) can be managed via the pipeline, while real runtime toggling happens **inside the app itself** using Unleash.
+This demonstrates:
+- Controlled deployment-time configuration changes (like beta banners) managed via the pipeline
+- Real runtime toggling happens inside the app itself using Unleash
  
 ---
 
@@ -166,7 +154,9 @@ The scan is configured with:
 - `--exit-code 0`: The pipeline **always continues**, even if vulnerabilities are found (useful in lab environments).
 - `--exit-code 1`: The pipeline **fails** if HIGH or CRITICAL vulnerabilities are found — this is the recommended setting in production environments.
 
-This demonstrates how to integrate **security scanning directly into CI/CD pipelines**, with control over enforcement policies and full traceability of scan results.
+This demonstrates:
+- Integration of security scanning directly into CI/CD pipelines
+- Full control over enforcement policies and traceability of scan results
  
 ---
 
