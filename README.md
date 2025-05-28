@@ -4,9 +4,6 @@
   <img src="https://img.shields.io/badge/Kubernetes-Orchestration-326ce5?logo=kubernetes&logoColor=white" />
   <img src="https://img.shields.io/badge/Tests-Passing-brightgreen?logo=jest&logoColor=white" />
   <img src="https://img.shields.io/badge/Lint-Clean-success?logo=eslint&logoColor=white" />
-  <a href="https://getunleash.io" target="_blank">
-    <img src="https://img.shields.io/badge/Unleash-Feature%20Flags-4e2a8e" />
-  </a>
   <a href="https://hub.docker.com/r/aithrien/my-microservice" target="_blank">
     <img src="https://img.shields.io/badge/DockerHub-View%20Image-blue?logo=docker&logoColor=white" />
   </a>
