@@ -132,7 +132,7 @@ docker run -p 3000:3000 youruser/my-microservice
 
 ---
 
-### 🧪 Part 5: Jest Testing Integration
+### 🧪 Part 5: Jest Integration
 
 1. Install Jest + jest-junit:
 ```bash
@@ -200,12 +200,11 @@ stage('Lint') {
 
 ---
 
-
 ### 🚩 Part 7: Unleash Integration
 
 This lab integrates **Unleash** as a runtime feature flag manager, while also demonstrating a deployment-time configuration change using the `BETA_BANNER_ENABLED` parameter.
 
-#### Installation & Setup
+#### 7A. Installation & Setup
 
 Add the Unleash Helm repository and install the Unleash server:
 ```bash
@@ -225,7 +224,7 @@ Default credentials:
 - **Username:** `admin`
 - **Password:** `unleash4all`
 
-#### Generate an Admin API Token
+#### 7B. Generate an Admin API Token
 
 1. Log into the Unleash UI.
 2. Go to your **user profile → API Tokens**.
@@ -239,7 +238,7 @@ Default credentials:
 UNLEASH_API_TOKEN=your-token-here
 ```
 
-#### Create the Feature Flag
+#### 7C. Create the Feature Flag
 
 1. In the Unleash UI, navigate to **Projects → default → New Feature Toggle**.
 2. Name it: `show-beta-banner`.
@@ -248,7 +247,7 @@ UNLEASH_API_TOKEN=your-token-here
    - Stickiness: `default`
    - Rollout: `100%`
 
-#### Deployment-Time Configuration Showcase in Jenkins
+#### 7D. Deployment-Time Configuration Showcase in Jenkins
 
 In this lab, the pipeline uses a **deployment-time configuration parameter** called `BETA_BANNER_ENABLED` (`on` or `off`) to simulate changing application behavior:
 
@@ -272,6 +271,49 @@ Welcome to the CI/CD Release Engineering Lab 🚀
 When `BETA_BANNER_ENABLED` is set to `off`, the second line is hidden.
 
 > ⚠️ **Note:** In production, toggling feature flags would be done dynamically at runtime using Unleash (no redeploy required). Here, we demonstrate a deploy-time configuration change for clarity and to showcase Jenkins pipeline flexibility.
+
+---
+
+
+### 🛡️ Part 8: Container Image Scanning with Trivy
+
+This lab integrates **Trivy**, an open-source security scanner for Docker images.  
+It ensures your container images don’t contain known vulnerabilities, demonstrating supply chain security in your pipeline.
+
+---
+
+#### 8A. Installation & Setup
+
+Instead of installing Trivy locally, we run it as a Docker container. The pipeline includes a dedicated **Trivy Scan** stage:
+
+```groovy
+stage('Trivy Scan') {
+  steps {
+    echo "🔍 Scanning Docker image with Trivy (Docker-based, with volume mount)..."
+    sh '''
+      docker run --rm -v /var/run/docker.sock:/var/run/docker.sock         -v $(pwd):/report/         aquasec/trivy image --exit-code 0 --severity HIGH,CRITICAL $IMAGE_NAME || true
+
+      docker run --rm -v /var/run/docker.sock:/var/run/docker.sock         -v $(pwd):/report/         aquasec/trivy image --format json --output /report/trivy-report.json $IMAGE_NAME || true
+    '''
+    archiveArtifacts artifacts: 'trivy-report.json', fingerprint: true
+  }
+}
+```
+
+- `docker run` executes Trivy inside a container.
+- It scans the built Docker image (`$IMAGE_NAME`).
+- The second command saves a detailed **JSON vulnerability report**.
+- Jenkins archives the `trivy-report.json` for inspection.
+
+---
+
+#### 8B. Report Details
+
+- After the pipeline runs, the **`trivy-report.json`** file is available as a Jenkins artifact.
+- It contains a full list of detected vulnerabilities, severity, and impacted packages.
+
+> ⚠️ **Note:** In production, it’s recommended to use `--exit-code 1` to fail the pipeline if HIGH or CRITICAL vulnerabilities are found.  
+> In this lab, `--exit-code 0` allows the pipeline to continue while still archiving the security report for review.
 
 ---
 
