@@ -93,10 +93,15 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     // Scan container image for vulnerabilities
     stage('Trivy Scan') {
       steps {
-        echo "🔍 Scanning Docker image with Trivy..."
+        echo "🔍 Scanning Docker image with Trivy (Docker-based, with volume mount)..."
         sh '''
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image --exit-code 0 --severity HIGH,CRITICAL $IMAGE_NAME || true
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image --format json --output trivy-report.json $IMAGE_NAME || true
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $(pwd):/report/ \
+            aquasec/trivy image --exit-code 0 --severity HIGH,CRITICAL $IMAGE_NAME || true
+
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $(pwd):/report/ \
+            aquasec/trivy image --format json --output /report/trivy-report.json $IMAGE_NAME || true
         '''
         archiveArtifacts artifacts: 'trivy-report.json', fingerprint: true
       }
