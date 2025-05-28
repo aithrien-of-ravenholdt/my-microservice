@@ -4,9 +4,6 @@
   <img src="https://img.shields.io/badge/Kubernetes-Orchestration-326ce5?logo=kubernetes&logoColor=white" />
   <img src="https://img.shields.io/badge/Tests-Passing-brightgreen?logo=jest&logoColor=white" />
   <img src="https://img.shields.io/badge/Lint-Clean-success?logo=eslint&logoColor=white" />
-  <a href="https://getunleash.io" target="_blank">
-    <img src="https://img.shields.io/badge/Unleash-Feature%20Flags-4e2a8e" />
-  </a>
   <a href="https://hub.docker.com/r/aithrien/my-microservice" target="_blank">
     <img src="https://img.shields.io/badge/DockerHub-View%20Image-blue?logo=docker&logoColor=white" />
   </a>
@@ -29,7 +26,8 @@ This project demonstrates a complete, production-grade CI/CD pipeline built with
 - **Minikube** – Local Kubernetes cluster
 - **DockerHub** – Remote container registry for CI-delivered images
 - **kubectl** – K8s command-line tool
-- **Unleash** – Feature flag service integrated with the CI pipeline
+- **Unleash** – Configuration change service integrated with the CI pipeline
+- **Trivy** – Image container scan with artifact output
 
 ---
 
@@ -40,13 +38,28 @@ This project demonstrates a complete, production-grade CI/CD pipeline built with
 3. **Installs dependencies** and runs tests (Jest)
 4. **Publishes test results** via the JUnit plugin
 5. **Builds a Docker image**
-6. **Pushes the image** to DockerHub securely via Jenkins credentials
-7. **Deploys to Kubernetes using Helm**
-8. **Toggles feature flags in Unleash** based on a pipeline parameter
-9. **Exposes the service using `kubectl port-forward`**
-10. **Performs a live health check via `curl`**
-11. **Fetches the live app output and archives it**
+6. **Runs an image scan** via Trivy
+7. **Pushes the image** to DockerHub securely via Jenkins credentials
+8. **Deploys to Kubernetes using Helm**
+9. **Toggles a configuration change### 🚩 Trivy Integration
+
+Trivy is integrated into the pipeline to **scan Docker images** for known vulnerabilities in base images and application dependencies.
+
+- The pipeline includes a **Trivy Scan stage** that runs directly inside Jenkins using the official Trivy Docker image.
+- No local installation of Trivy is needed — this follows cloud-native best practices, ensuring portability and no dependency on local tools.
+- The stage uses volume mounts (`-v $(pwd):/report/`) to generate a **`trivy-report.json`** in the Jenkins workspace.
+- The report is archived as a pipeline artifact for detailed inspection of vulnerabilities.
+
+The scan is configured with:
+- `--exit-code 0`: The pipeline **always continues**, even if vulnerabilities are found (useful in lab environments).
+- `--exit-code 1`: The pipeline **fails** if HIGH or CRITICAL vulnerabilities are found — this is the recommended setting in production environments.
+
+This demonstrates how to integrate **security scanning directly into CI/CD pipelines**, with control over enforcement policies and full traceability of scan results.
+  via Unleash** based on a pipeline parameter
+10. **Exposes the service using `kubectl port-forward`**
+11. **Performs a live health check via `curl`**
 12. **Rolls back automatically** if the health check fails
+13. **Fetches the live app output and archives it**
 
 ---
 
@@ -141,6 +154,22 @@ https://hub.docker.com/r/aithrien/my-microservice
 
 ---
 
+## 🛡️ Trivy Image Scan and Reporting
+
+Trivy is integrated into the pipeline to **scan Docker images** for known vulnerabilities in base images and application dependencies.
+
+- The pipeline includes a **Trivy Scan stage** that runs directly inside Jenkins using the official Trivy Docker image.
+- The stage uses volume mounts (`-v $(pwd):/report/`) to generate a **`trivy-report.json`** in the Jenkins workspace.
+- The report is archived as a pipeline artifact for detailed inspection of vulnerabilities.
+
+The scan is configured with:
+- `--exit-code 0`: The pipeline **always continues**, even if vulnerabilities are found (useful in lab environments).
+- `--exit-code 1`: The pipeline **fails** if HIGH or CRITICAL vulnerabilities are found — this is the recommended setting in production environments.
+
+This demonstrates how to integrate **security scanning directly into CI/CD pipelines**, with control over enforcement policies and full traceability of scan results.
+ 
+---
+
 ## ⚙️ Health Check Strategy
 
 The pipeline uses:
@@ -167,12 +196,13 @@ helm rollback my-microservice <revision>
 ---
 
 ## ✅ Final State
- 
-- Jenkins connects securely to Minikube with a configured `.kube/config` and TLS certificates
-- The CI/CD pipeline builds, lints, tests, pushes, and deploys automatically
-- Health checks verify post-deploy stability
-- Auto-rollback protects against bad deployments
-- All quality gates (tests + lint) are visible in Jenkins with archived reports
+
+- Jenkins securely connects to Minikube using a configured `.kube/config` and TLS certificates
+- The CI/CD pipeline **builds, lints, tests, scans for vulnerabilities, pushes and deploys** automatically
+- Health checks **verify post-deploy stability**, with **auto-rollback** protecting against bad deployments
+- All **quality gates** (tests, lint, and scan reports) are visible in Jenkins, with **archived artifacts** for traceability
+- Deployment-time **configuration changes** are seamlessly integrated in the pipeline
+- Rendered HTML output and feature flag states are archived as artifacts, providing **visual verification** of deployments
 
 ---
 
@@ -180,7 +210,6 @@ helm rollback my-microservice <revision>
 
 ### 🛡️ Security & Hardening
 
-- Scan container images with Trivy
 - Use Helm Secrets and Kubernetes `Secrets` for secure config and credentials
 - Integrate RBAC for Jenkins service account and namespace isolation
 
