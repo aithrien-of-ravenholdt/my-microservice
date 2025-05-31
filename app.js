@@ -38,13 +38,13 @@ app.get('/', (req, res) => {
   const context = { userId: 'ci-cd-lab' };
   const betaEnabled = unleash.isEnabled('show-beta-banner', context);
 
-  console.log(`🧪 Flag 'show-beta-banner' is ${betaEnabled ? 'ENABLED' : 'DISABLED'}`);
+  console.log(`Flag 'show-beta-banner' is ${betaEnabled ? 'ENABLED' : 'DISABLED'}`);
 
   const baseMessage = 'Welcome to the CI/CD Release Engineering Lab 🚀';
   const betaMessage = '\n🧪 Beta Feature: Releasing smarter, one flag at a time.';
 
   const response = baseMessage + (betaEnabled ? betaMessage : '');
-  console.log(`📤 Responding with:\n${response}`);
+  console.log(`Responding with:\n${response}`);
   res.send(response);
 });
 

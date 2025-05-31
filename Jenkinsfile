@@ -14,7 +14,7 @@ pipeline {
 Controls whether the beta banner is shown in app response.
 
 ✅ on  → Show the beta banner message
-❌ off → Hide the beta banner (show default only)
+❌ off → Hide the beta banner (show default app response)
 
 Note: This is a deployment-time configuration change, not a runtime feature flag.'''
     )
@@ -93,7 +93,7 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     // Scan container image for vulnerabilities
     stage('Trivy Scan') {
       steps {
-        echo "🔍 Scanning Docker image with Trivy (Docker-based, with volume mount)..."
+        echo "Scanning Docker image with Trivy..."
         sh '''
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             -v $(pwd):/report/ \
@@ -157,7 +157,7 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     // Wait until the app pod is marked ready
     stage('Wait for Pod Readiness') {
       steps {
-        echo "⏳ Waiting for my-microservice pod to be ready..."
+        echo "Waiting for my-microservice pod to be ready..."
         sh 'kubectl wait --for=condition=ready pod -l app.kubernetes.io/instance=my-microservice --timeout=60s'
       }
     }
@@ -174,7 +174,7 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
                 -H "Authorization: Bearer $UNLEASH_ADMIN_TOKEN" \
                 -H "Content-Type: application/json" > unleash-flags.json
 
-              echo "🔍 Feature Flags Snapshot:"
+              echo "Feature Flags Snapshot:"
               cat unleash-flags.json
             '''
           }
@@ -212,7 +212,7 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     // Fetch rendered HTML response from root route
     stage('Capture Rendered App Output') {
       steps {
-        echo "📥 Fetching actual app response from root route..."
+        echo "Fetching actual app response from root route..."
         sh '''
           echo "<pre>" > rendered-output.html
           curl -s http://localhost:8888 >> rendered-output.html
