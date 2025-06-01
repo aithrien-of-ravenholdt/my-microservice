@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 
 // Initialize Unleash SDK — use env var override if present for portability
 const unleash = initialize({
-  url: process.env.UNLEASH_URL || 'http://unleash-server:4242/api/',
+  url: process.env.UNLEASH_URL || 'http://unleash-server.default.svc.cluster.local:4242/api/',
   appName: 'cicd-lab-app',
   environment: 'development',
   refreshInterval: 2,
