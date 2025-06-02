@@ -113,16 +113,6 @@ kubectl get nodes
 helm upgrade --install my-microservice ./my-microservice-chart
 ```
 
-#### 3C. Auto Rollback
-- Jenkins checks health after deployment:
-```groovy
-sh 'kubectl port-forward svc/my-microservice-my-microservice-chart 8888:3000 &'
-```
-- If the app returns anything other than `200 OK`, Jenkins rolls back:
-```bash
-helm rollback my-microservice <revision>
-```
-
 ---
 
 ### 🐳 Part 4: DockerHub Publishing
@@ -295,12 +285,13 @@ It ensures your container images don’t contain known vulnerabilities, demonstr
 
 #### 8A. Installation & Setup
 
-Instead of installing Trivy locally, we run it as a Docker container. The pipeline includes a dedicated **Trivy Scan** stage:
+Instead of installing Trivy locally, we run it as a Docker container. The pipeline includes a dedicated **Trivy Scan** stage.
+It's disabled by default, to include it in the pipeline run you must remove the `//`at the start of the stage inside the Jenkinsfile:
 
 ```groovy
-stage('Trivy Scan') {
+//stage('Trivy Scan') {
   steps {
-    echo "🔍 Scanning Docker image with Trivy (Docker-based, with volume mount)..."
+    echo " Scanning Docker image with Trivy (Docker-based, with volume mount)..."
     sh '''
       docker run --rm -v /var/run/docker.sock:/var/run/docker.sock         -v $(pwd):/report/         aquasec/trivy image --exit-code 0 --severity HIGH,CRITICAL $IMAGE_NAME || true
 
