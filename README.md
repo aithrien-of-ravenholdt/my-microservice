@@ -286,7 +286,7 @@ It ensures your container images don’t contain known vulnerabilities, demonstr
 #### 8A. Installation & Setup
 
 Instead of installing Trivy locally, we run it as a Docker container. The pipeline includes a dedicated **Trivy Scan** stage.
-It's disabled by default, to include it in the pipeline run you must remove the `//`at the start of the stage inside the Jenkinsfile:
+It's disabled by default, to include it in the pipeline run you must change the expression value to `true` at the start of the stage:
 
 ```groovy
 //stage('Trivy Scan') {

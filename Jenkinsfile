@@ -91,7 +91,10 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     }
     
     // Scan container image for vulnerabilities
-    //stage('Trivy Scan') {
+    stage('Trivy Scan') {
+      when {
+        expression { false }
+      }
       steps {
         echo "Scanning Docker image with Trivy..."
         sh '''
