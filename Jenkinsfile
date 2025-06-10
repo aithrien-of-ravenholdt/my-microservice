@@ -104,7 +104,7 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
       }
     }
 
-    // Run tests and capture test results
+    // Run tests and capture tefor improved readability and efficiency.st results
     stage('Run Tests') {
       steps {
         script {
@@ -326,10 +326,14 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
       sh "pkill -f 'kubectl port-forward' || true"
     }
     success {
-      echo "Pipeline completed successfully!"
+      node {
+        echo 'Pipeline succeeded!'
+      }
     }
     failure {
-      echo "Pipeline failed!"
+      node {
+        echo 'Pipeline failed!'
+      }
     }
   }
 }
