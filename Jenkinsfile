@@ -197,15 +197,29 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
         echo 'Deploying with Helm...'
         sh '''
           cd my-microservice-chart
+          
           # Debug network connectivity
+          echo "Testing network connectivity..."
           ping -c 1 github.com || true
           curl -v https://github.com || true
           
-          # Add Unleash repo with direct GitHub URL and use local DNS
-          helm repo add unleash https://raw.githubusercontent.com/Unleash/helm-charts/main/
-          helm repo update
-          helm dependency build
-          helm upgrade --install my-microservice . --set unleash.url=http://unleash-server.unleash.svc.cluster.local:4242/api/
+          # Add Unleash repo using the official repository
+          echo "Adding Unleash Helm repository..."
+          helm repo add unleash https://charts.unleash.io/
+          
+          # Update repositories with verbose output
+          echo "Updating Helm repositories..."
+          helm repo update --debug
+          
+          # Build dependencies with verbose output
+          echo "Building Helm dependencies..."
+          helm dependency build --debug
+          
+          # Deploy with verbose output
+          echo "Deploying application..."
+          helm upgrade --install my-microservice . \
+            --set unleash.url=http://unleash-server.unleash.svc.cluster.local:4242/api/ \
+            --debug
         '''
       }
     }

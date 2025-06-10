@@ -40,7 +40,7 @@ ingress:
 env:
   NODE_ENV: "production"
   LOG_LEVEL: "info"
-  UNLEASH_URL: "http://unleash-server:4242"
+  UNLEASH_URL: "http://unleash-server.unleash.svc.cluster.local:4242/api"
   UNLEASH_APP_NAME: "cicd-lab-app"
   UNLEASH_REFRESH_INTERVAL: "2"
   # Rate limiter configuration
