@@ -322,16 +322,17 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
   // Cleanup hook
   post {
     always {
-      sh 'docker stop microservice || true'
-      sh "pkill -f 'kubectl port-forward' || true"
+      node('docker') {
+        echo 'Pipeline completed!'
+      }
     }
     success {
-      node {
+      node('docker') {
         echo 'Pipeline succeeded!'
       }
     }
     failure {
-      node {
+      node('docker') {
         echo 'Pipeline failed!'
       }
     }
