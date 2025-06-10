@@ -43,12 +43,6 @@ spec:
           env:
             - name: PORT
               value: "3000"
-            {{- with .Values.env }}
-            {{- range $key, $value := . }}
-            - name: {{ $key }}
-              value: {{ $value | quote }}
-            {{- end }}
-            {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -84,4 +78,4 @@ spec:
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
-      {{- end }} 
+      {{- end }}

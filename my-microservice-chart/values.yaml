@@ -10,8 +10,8 @@ nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
-  create: false
-  automount: false
+  create: true
+  automount: true
   annotations: {}
   name: ""
 
@@ -35,18 +35,6 @@ ingress:
         - path: /
           pathType: ImplementationSpecific
   tls: []
-
-# Environment variables configuration
-env:
-  NODE_ENV: "development"
-  LOG_LEVEL: "info"
-  UNLEASH_URL: "http://10.96.143.99:4242/api"
-  UNLEASH_APP_NAME: "cicd-lab-app"
-  UNLEASH_REFRESH_INTERVAL: "2"
-  UNLEASH_API_TOKEN: "user:149f202ed70ed01f78ac0488113bf78428e93c208bf161b52785dafa"
-  # Rate limiter configuration
-  RATE_LIMIT_WINDOW_MS: "900000"  # 15 minutes
-  RATE_LIMIT_MAX: "100"
 
 resources: {}
 
@@ -75,4 +63,4 @@ volumeMounts: []
 
 nodeSelector: {}
 tolerations: []
-affinity: {} 
+affinity: {}
