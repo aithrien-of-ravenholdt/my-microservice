@@ -43,7 +43,20 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     // Pull source code
     stage('Checkout') {
       steps {
-        git branch: 'main', url: 'https://github.com/aithrien-of-ravenholdt/my-microservice.git'
+        // Clean workspace before checkout
+        cleanWs()
+        // Checkout with clean
+        checkout([
+          $class: 'GitSCM',
+          branches: [[name: '*/main']],
+          extensions: [
+            [$class: 'CleanBeforeCheckout'],
+            [$class: 'CleanCheckout']
+          ],
+          userRemoteConfigs: [[
+            url: 'https://github.com/aithrien-of-ravenholdt/my-microservice.git'
+          ]]
+        ])
       }
     }
 
@@ -198,11 +211,11 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
         echo 'Deploying with Helm...'
         withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_API_TOKEN')]) {
           sh '''
-            pwd
-            ls -la
             cd my-microservice-chart
-            pwd
-            ls -la
+            
+            # Debug: List all files
+            echo "=== Listing all files in chart directory ==="
+            find . -type f
             
             # Create Kubernetes secret with Unleash token
             kubectl create secret generic unleash-api-token \
