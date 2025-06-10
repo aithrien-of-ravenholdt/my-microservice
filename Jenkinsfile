@@ -194,8 +194,12 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     // Deploy microservice with Helm
     stage('Helm Deploy') {
       steps {
-        echo "Deploying with Helm..."
-        sh 'helm upgrade --install my-microservice ./my-microservice-chart'
+        echo 'Deploying with Helm...'
+        sh '''
+          cd my-microservice-chart
+          helm dependency build
+          helm upgrade --install my-microservice .
+        '''
       }
     }
 
