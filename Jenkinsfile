@@ -51,15 +51,15 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
       steps {
         script {
           echo "Setting beta banner configuration to ${params.BETA_BANNER_ENABLED}"
-
+          
           def action = (params.BETA_BANNER_ENABLED == 'on') ? 'on' : 'off'
-
+          
           withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
-            sh """
-              curl -X POST ${UNLEASH_URL}/api/admin/projects/default/features/show-beta-banner/environments/development/${action} \\
-                -H "Authorization: Bearer \$UNLEASH_ADMIN_TOKEN" \\
+            sh '''
+              curl -X POST http://unleash-server.unleash.svc.cluster.local:4242/api/admin/projects/default/features/show-beta-banner/environments/development/${action} \
+                -H "Authorization: Bearer ${UNLEASH_ADMIN_TOKEN}" \
                 -H "Content-Type: application/json"
-            """
+            '''
           }
         }
       }
