@@ -197,7 +197,12 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
         echo 'Deploying with Helm...'
         sh '''
           cd my-microservice-chart
-          helm repo add unleash https://charts.unleash.io/
+          # Debug DNS resolution
+          cat /etc/resolv.conf
+          nslookup charts.unleash.io || true
+          
+          # Add Unleash repo with full URL
+          helm repo add unleash https://unleash.github.io/helm-charts/
           helm repo update
           helm dependency build
           helm upgrade --install my-microservice .
