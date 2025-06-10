@@ -56,7 +56,7 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
           
           withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
             sh '''
-              curl -X POST http://localhost:4242/api/admin/projects/default/features/show-beta-banner/environments/development/${action} \
+              curl -X POST http://localhost:4242/api/admin/features/show-beta-banner/environments/development/${action} \
                 -H "Authorization: Bearer ${UNLEASH_ADMIN_TOKEN}" \
                 -H "Content-Type: application/json"
             '''
@@ -77,12 +77,11 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
       steps {
         script {
           try {
-            sh 'npm run lint > eslint-report.txt'
-          } catch (error) {
-            echo "Linting failed, but continuing pipeline"
-            sh 'echo "Linting failed: ${error.message}" >> eslint-report.txt'
+            sh 'npm run lint'
+          } catch (Exception e) {
+            echo 'Linting failed, but continuing pipeline'
+            currentBuild.result = 'UNSTABLE'
           }
-          archiveArtifacts artifacts: 'eslint-report.txt', fingerprint: true
         }
       }
     }
