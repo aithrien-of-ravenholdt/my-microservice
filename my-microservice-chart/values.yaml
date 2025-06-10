@@ -93,10 +93,9 @@ unleash:
     type: ClusterIP
     port: 4242
   admin:
-    token: "user:0a82c3cf384d2914feacdb37406f76f927b3e86a6402fc70bef035f6"
+    token: ""  # Will be provided via Kubernetes secret
   client:
-    tokens:
-      - "user:0a82c3cf384d2914feacdb37406f76f927b3e86a6402fc70bef035f6"
+    tokens: []  # Will be provided via Kubernetes secret
   database:
     type: sqlite
     sqlite:

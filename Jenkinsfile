@@ -28,6 +28,7 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
       defaultValue: '30',
       description: 'Timeout in seconds for health check'
     )
+    string(name: 'UNLEASH_TOKEN_CREDENTIAL_ID', defaultValue: 'unleash-admin-token', description: 'Jenkins credential ID for the Unleash admin token')
   }
 
   environment {
@@ -195,32 +196,40 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     stage('Helm Deploy') {
       steps {
         echo 'Deploying with Helm...'
-        sh '''
-          cd my-microservice-chart
-          
-          # Debug network connectivity
-          echo "Testing network connectivity..."
-          ping -c 1 github.com || true
-          curl -v https://github.com || true
-          
-          # Add Unleash repo using the official repository
-          echo "Adding Unleash Helm repository..."
-          helm repo add unleash https://charts.unleash.io/
-          
-          # Update repositories with verbose output
-          echo "Updating Helm repositories..."
-          helm repo update --debug
-          
-          # Build dependencies with verbose output
-          echo "Building Helm dependencies..."
-          helm dependency build --debug
-          
-          # Deploy with verbose output
-          echo "Deploying application..."
-          helm upgrade --install my-microservice . \
-            --set unleash.url=http://unleash-server.unleash.svc.cluster.local:4242/api/ \
-            --debug
-        '''
+        withCredentials([string(credentialsId: "${params.UNLEASH_TOKEN_CREDENTIAL_ID}", variable: 'UNLEASH_API_TOKEN')]) {
+          sh '''
+            cd my-microservice-chart
+            
+            # Debug network connectivity
+            echo "Testing network connectivity..."
+            ping -c 1 github.com || true
+            curl -v https://github.com || true
+            
+            # Create Kubernetes secret with Unleash token
+            echo "Creating Kubernetes secret for Unleash token..."
+            kubectl create secret generic unleash-api-token \
+              --from-literal=token="${UNLEASH_API_TOKEN}" \
+              --dry-run=client -o yaml | kubectl apply -f -
+            
+            # Add Unleash repo using the official repository
+            echo "Adding Unleash Helm repository..."
+            helm repo add unleash https://charts.unleash.io/
+            
+            # Update repositories with verbose output
+            echo "Updating Helm repositories..."
+            helm repo update --debug
+            
+            # Build dependencies with verbose output
+            echo "Building Helm dependencies..."
+            helm dependency build --debug
+            
+            # Deploy with verbose output
+            echo "Deploying application..."
+            helm upgrade --install my-microservice . \
+              --set unleash.url=http://unleash-server.unleash.svc.cluster.local:4242/api/ \
+              --debug
+          '''
+        }
       }
     }
 
