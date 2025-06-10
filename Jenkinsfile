@@ -322,19 +322,13 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
   // Cleanup hook
   post {
     always {
-      node('docker') {
-        echo 'Pipeline completed!'
-      }
+      echo 'Pipeline completed!'
     }
     success {
-      node('docker') {
-        echo 'Pipeline succeeded!'
-      }
+      echo 'Pipeline succeeded!'
     }
     failure {
-      node('docker') {
-        echo 'Pipeline failed!'
-      }
+      echo 'Pipeline failed!'
     }
   }
 }
