@@ -9,8 +9,3 @@ maintainers:
 annotations:
   github: "https://github.com/aithrien-of-ravenholdt/my-microservice"
   category: "DevOps"
-
-dependencies:
-  - name: unleash
-    version: "5.0.0"
-    repository: "file://charts"
