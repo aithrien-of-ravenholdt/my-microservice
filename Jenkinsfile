@@ -201,11 +201,11 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
           ping -c 1 github.com || true
           curl -v https://github.com || true
           
-          # Add Unleash repo with direct GitHub URL
+          # Add Unleash repo with direct GitHub URL and use local DNS
           helm repo add unleash https://raw.githubusercontent.com/Unleash/helm-charts/main/
           helm repo update
           helm dependency build
-          helm upgrade --install my-microservice .
+          helm upgrade --install my-microservice . --set unleash.url=http://unleash-server.unleash.svc.cluster.local:4242/api/
         '''
       }
     }
