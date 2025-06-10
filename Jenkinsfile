@@ -46,23 +46,21 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     // Pull source code
     stage('Checkout') {
       steps {
-        node {
-          // Clean workspace before checkout
-          cleanWs()
-          
-          // Detailed checkout with clean options
-          checkout([
-            $class: 'GitSCM',
-            branches: [[name: '*/main']],
-            extensions: [
-              [$class: 'CleanBeforeCheckout'],
-              [$class: 'CleanCheckout']
-            ],
-            userRemoteConfigs: [[
-              url: 'https://github.com/aithrien-of-ravenholdt/my-microservice.git'
-            ]]
-          ])
-        }
+        // Clean workspace before checkout
+        cleanWs()
+        
+        // Detailed checkout with clean options
+        checkout([
+          $class: 'GitSCM',
+          branches: [[name: '*/main']],
+          extensions: [
+            [$class: 'CleanBeforeCheckout'],
+            [$class: 'CleanCheckout']
+          ],
+          userRemoteConfigs: [[
+            url: 'https://github.com/aithrien-of-ravenholdt/my-microservice.git'
+          ]]
+        ])
       }
     }
 
@@ -134,9 +132,7 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     // Build container image
     stage('Build') {
       steps {
-        node {
-          sh 'docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .'
-        }
+        sh 'docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .'
       }
     }
     
@@ -186,17 +182,11 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     // Tag and push image to registry
     stage('Push') {
       steps {
-        node {
-          withCredentials([usernamePassword(
-            credentialsId: 'dockerhub',
-            usernameVariable: 'DOCKER_USER',
-            passwordVariable: 'DOCKER_PASS'
-          )]) {
-            sh '''
-              docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} "$DOCKER_USER/${DOCKER_IMAGE}:${DOCKER_TAG}"
-              docker push "$DOCKER_USER/${DOCKER_IMAGE}:${DOCKER_TAG}"
-            '''
-          }
+        withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          sh '''
+            echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
+            docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
+          '''
         }
       }
     }
@@ -218,28 +208,25 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     // Deploy microservice with Helm
     stage('Helm Deploy') {
       steps {
-        node {
-          echo 'Deploying with Helm...'
-          withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_API_TOKEN')]) {
-            sh '''
-              echo "=== Current directory ==="
-              pwd
-              
-              echo "=== Listing all files in chart directory ==="
-              cd my-microservice-chart
-              find . -type f
-              
-              echo "=== Building dependencies ==="
-              helm dependency build
-              
-              echo "=== Installing/Upgrading release ==="
-              helm upgrade --install my-microservice . \
-                  --set image.tag=${DOCKER_TAG} \
-                  --set unleash.apiToken=${UNLEASH_API_TOKEN} \
-                  --namespace default \
-                  --create-namespace
-            '''
-          }
+        withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_API_TOKEN')]) {
+          sh '''
+            echo "=== Current directory ==="
+            pwd
+            
+            echo "=== Listing all files in chart directory ==="
+            cd my-microservice-chart
+            find . -type f
+            
+            echo "=== Building dependencies ==="
+            helm dependency build
+            
+            echo "=== Installing/Upgrading release ==="
+            helm upgrade --install my-microservice . \
+                --set image.tag=${DOCKER_TAG} \
+                --set unleash.apiToken=${UNLEASH_API_TOKEN} \
+                --namespace default \
+                --create-namespace
+          '''
         }
       }
     }
