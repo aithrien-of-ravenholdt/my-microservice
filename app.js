@@ -75,7 +75,10 @@ try {
 
 // Root route with flag-controlled message
 app.get('/', (req, res) => {
-  const context = { userId: 'ci-cd-lab' };
+  const context = { 
+    userId: 'ci-cd-lab',
+    groupId: 'show-beta-banner'  // Add groupId to match Unleash configuration
+  };
   let betaEnabled = false;
 
   if (unleash) {
