@@ -197,6 +197,8 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
         echo 'Deploying with Helm...'
         sh '''
           cd my-microservice-chart
+          helm repo add unleash https://charts.unleash.io/
+          helm repo update
           helm dependency build
           helm upgrade --install my-microservice .
         '''
