@@ -36,7 +36,24 @@ ingress:
           pathType: ImplementationSpecific
   tls: []
 
-resources: {}
+# Environment variables configuration
+env:
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  UNLEASH_URL: "http://unleash-server:4242"
+  UNLEASH_APP_NAME: "cicd-lab-app"
+  UNLEASH_REFRESH_INTERVAL: "2"
+  # Rate limiter configuration
+  RATE_LIMIT_WINDOW_MS: "900000"  # 15 minutes
+  RATE_LIMIT_MAX: "100"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
 
 livenessProbe:
   httpGet:
@@ -44,6 +61,8 @@ livenessProbe:
     port: http
   initialDelaySeconds: 3
   periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
 
 readinessProbe:
   httpGet:
@@ -51,6 +70,8 @@ readinessProbe:
     port: http
   initialDelaySeconds: 3
   periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
 
 autoscaling:
   enabled: false

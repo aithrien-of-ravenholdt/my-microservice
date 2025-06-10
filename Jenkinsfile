@@ -18,10 +18,24 @@ Controls whether the beta banner is shown in app response.
 
 Note: This is a deployment-time configuration change, not a runtime feature flag.'''
     )
+    string(
+      name: 'POD_READINESS_TIMEOUT',
+      defaultValue: '120',
+      description: 'Timeout in seconds for pod readiness check'
+    )
+    string(
+      name: 'HEALTH_CHECK_TIMEOUT',
+      defaultValue: '30',
+      description: 'Timeout in seconds for health check'
+    )
   }
 
   environment {
     IMAGE_NAME = "my-microservice:latest"
+    UNLEASH_URL = "http://unleash-server:4242"
+    K8S_SERVICE_NAME = "my-microservice-my-microservice-chart"
+    FORWARD_PORT = "8888"
+    APP_PORT = "3000"
   }
 
   stages {
@@ -42,7 +56,7 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
 
           withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
             sh """
-              curl -X POST http://localhost:4242/api/admin/projects/default/features/show-beta-banner/environments/development/${action} \\
+              curl -X POST ${UNLEASH_URL}/api/admin/projects/default/features/show-beta-banner/environments/development/${action} \\
                 -H "Authorization: Bearer \$UNLEASH_ADMIN_TOKEN" \\
                 -H "Content-Type: application/json"
             """
@@ -61,18 +75,32 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     // Lint and archive static analysis results
     stage('Lint') {
       steps {
-        sh 'npm run lint > eslint-report.txt || true'
-        archiveArtifacts artifacts: 'eslint-report.txt', fingerprint: true
+        script {
+          try {
+            sh 'npm run lint > eslint-report.txt'
+          } catch (error) {
+            echo "Linting failed, but continuing pipeline"
+            sh 'echo "Linting failed: ${error.message}" >> eslint-report.txt'
+          }
+          archiveArtifacts artifacts: 'eslint-report.txt', fingerprint: true
+        }
       }
     }
 
     // Run tests and capture test results
     stage('Run Tests') {
       steps {
-        sh '''
-          mkdir -p test-results
-          npm test || true
-        '''
+        script {
+          try {
+            sh '''
+              mkdir -p test-results
+              npm test
+            '''
+          } catch (error) {
+            echo "Tests failed, but continuing pipeline"
+            sh 'echo "Tests failed: ${error.message}" > test-results/test-failure.txt'
+          }
+        }
       }
     }
 
@@ -80,6 +108,7 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     stage('Publish Test Results') {
       steps {
         junit 'test-results/junit.xml'
+        archiveArtifacts artifacts: 'test-results/test-failure.txt', allowEmptyArchive: true
       }
     }
 
@@ -144,8 +173,14 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     // Confirm Kubernetes access before deploying
     stage('Verify Kube Access') {
       steps {
-        sh 'kubectl config current-context || echo "❌ No Kube context loaded"'
-        sh 'kubectl get nodes || echo "❌ Cluster unreachable"'
+        script {
+          try {
+            sh 'kubectl config current-context'
+            sh 'kubectl get nodes'
+          } catch (error) {
+            error "Failed to verify Kubernetes access: ${error.message}"
+          }
+        }
       }
     }
 
@@ -161,7 +196,7 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     stage('Wait for Pod Readiness') {
       steps {
         echo "Waiting for my-microservice pod to be ready..."
-        sh 'kubectl wait --for=condition=ready pod -l app.kubernetes.io/instance=my-microservice --timeout=60s'
+        sh "kubectl wait --for=condition=ready pod -l app.kubernetes.io/instance=my-microservice --timeout=${params.POD_READINESS_TIMEOUT}s"
       }
     }
 
@@ -172,14 +207,14 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
           echo "Fetching current feature flags from Unleash..."
 
           withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
-            sh '''
-              curl -s http://localhost:4242/api/admin/projects/default/features \
-                -H "Authorization: Bearer $UNLEASH_ADMIN_TOKEN" \
+            sh """
+              curl -s ${UNLEASH_URL}/api/admin/projects/default/features \\
+                -H "Authorization: Bearer \$UNLEASH_ADMIN_TOKEN" \\
                 -H "Content-Type: application/json" > unleash-flags.json
 
               echo "Feature Flags Snapshot:"
               cat unleash-flags.json
-            '''
+            """
           }
 
           archiveArtifacts artifacts: 'unleash-flags.json', fingerprint: true
@@ -192,21 +227,40 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
       steps {
         script {
           echo "Running basic health check..."
+          def portForwardProcess = null
 
-          sh 'kubectl port-forward svc/my-microservice-my-microservice-chart 8888:3000 &'
-          sleep 5
+          try {
+            // Start port-forward in background
+            portForwardProcess = sh(
+              script: "kubectl port-forward svc/${K8S_SERVICE_NAME} ${FORWARD_PORT}:${APP_PORT} &",
+              returnStdout: true
+            ).trim()
+            
+            // Wait for port-forward to be ready
+            sleep 5
 
-          def healthCode = sh(
-            script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8888/health',
-            returnStdout: true
-          ).trim()
+            // Perform health check with timeout
+            def healthCode = sh(
+              script: "timeout ${params.HEALTH_CHECK_TIMEOUT} curl -s -o /dev/null -w '%{http_code}' http://localhost:${FORWARD_PORT}/health",
+              returnStdout: true
+            ).trim()
 
-          if (healthCode != '200') {
+            if (healthCode != '200') {
+              echo "❌ Health check failed — rolling back"
+              sh 'helm rollback my-microservice 1'
+              error("Deployment failed health check. Rolled back.")
+            } else {
+              echo "✅ Health check passed — app is healthy"
+            }
+          } catch (error) {
             echo "❌ Health check failed — rolling back"
             sh 'helm rollback my-microservice 1'
-            error("Deployment failed health check. Rolled back.")
-          } else {
-            echo "✅ Health check passed — app is healthy"
+            error("Deployment failed health check: ${error.message}. Rolled back.")
+          } finally {
+            // Cleanup port-forward
+            if (portForwardProcess) {
+              sh "pkill -f 'kubectl port-forward' || true"
+            }
           }
         }
       }
@@ -216,11 +270,11 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     stage('Capture Rendered App Output') {
       steps {
         echo "Fetching actual app response from root route..."
-        sh '''
+        sh """
           echo "<pre>" > rendered-output.html
-          curl -s http://localhost:8888 >> rendered-output.html
+          curl -s http://localhost:${FORWARD_PORT} >> rendered-output.html
           echo "</pre>" >> rendered-output.html
-        '''
+        """
         archiveArtifacts artifacts: 'rendered-output.html', fingerprint: true
       }
     }  
@@ -230,6 +284,13 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
   post {
     always {
       sh 'docker stop microservice || true'
+      sh "pkill -f 'kubectl port-forward' || true"
+    }
+    success {
+      echo "Pipeline completed successfully!"
+    }
+    failure {
+      echo "Pipeline failed!"
     }
   }
 }
