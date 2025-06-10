@@ -5,7 +5,6 @@
 require('dotenv').config();
 
 const express = require('express');
-const { initialize } = require('unleash-client');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const winston = require('winston');
@@ -40,43 +39,55 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Initialize Unleash SDK with proper error handling
+// Initialize Unleash SDK only in production
 let unleash;
-try {
-  unleash = initialize({
-    url: process.env.UNLEASH_URL || 'http://unleash-server:4242/api/',
-    appName: process.env.UNLEASH_APP_NAME || 'cicd-lab-app',
-    environment: process.env.NODE_ENV || 'development',
-    refreshInterval: parseInt(process.env.UNLEASH_REFRESH_INTERVAL) || 2,
-    customHeaders: {
-      Authorization: process.env.UNLEASH_API_TOKEN,
-    },
-  });
+if (process.env.NODE_ENV === 'production') {
+  try {
+    const { initialize } = require('unleash-client');
+    unleash = initialize({
+      url: process.env.UNLEASH_URL || 'http://unleash-server:4242/api/',
+      appName: process.env.UNLEASH_APP_NAME || 'cicd-lab-app',
+      environment: process.env.NODE_ENV || 'development',
+      refreshInterval: parseInt(process.env.UNLEASH_REFRESH_INTERVAL) || 2,
+      customHeaders: {
+        Authorization: process.env.UNLEASH_API_TOKEN,
+      },
+    });
 
-  // Log when Unleash SDK is ready and fetch initial toggles
-  unleash.on('ready', async () => {
-    logger.info('✅ Unleash is ready');
-    try {
-      await unleash.repository.fetch();
-      logger.info('🔄 Flags fetched on boot');
-    } catch (error) {
-      logger.error('Failed to fetch initial flags:', error);
-    }
-  });
+    // Log when Unleash SDK is ready and fetch initial toggles
+    unleash.on('ready', async () => {
+      logger.info('✅ Unleash is ready');
+      try {
+        await unleash.repository.fetch();
+        logger.info('🔄 Flags fetched on boot');
+      } catch (error) {
+        logger.error('Failed to fetch initial flags:', error);
+      }
+    });
 
-  // Log Unleash client-side errors
-  unleash.on('error', (err) => {
-    logger.error('❌ Unleash error:', err);
-  });
-} catch (error) {
-  logger.error('Failed to initialize Unleash:', error);
-  process.exit(1);
+    // Log Unleash client-side errors
+    unleash.on('error', (err) => {
+      logger.error('❌ Unleash error:', err);
+    });
+  } catch (error) {
+    logger.error('Failed to initialize Unleash:', error);
+    process.exit(1);
+  }
+} else {
+  logger.info('Running in development mode without Unleash');
 }
 
 // Root route with flag-controlled message
 app.get('/', (req, res) => {
   const context = { userId: 'ci-cd-lab' };
-  const betaEnabled = unleash.isEnabled('show-beta-banner', context);
+  let betaEnabled = false;
+
+  if (process.env.NODE_ENV === 'production' && unleash) {
+    betaEnabled = unleash.isEnabled('show-beta-banner', context);
+  } else {
+    // In development, use environment variable
+    betaEnabled = process.env.BETA_BANNER_ENABLED === 'true';
+  }
 
   logger.info(`Flag 'show-beta-banner' is ${betaEnabled ? 'ENABLED' : 'DISABLED'}`);
 

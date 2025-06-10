@@ -85,3 +85,19 @@ volumeMounts: []
 nodeSelector: {}
 tolerations: []
 affinity: {}
+
+# Unleash configuration
+unleash:
+  enabled: true
+  service:
+    type: ClusterIP
+    port: 4242
+  admin:
+    token: "user:0a82c3cf384d2914feacdb37406f76f927b3e86a6402fc70bef035f6"
+  client:
+    tokens:
+      - "user:0a82c3cf384d2914feacdb37406f76f927b3e86a6402fc70bef035f6"
+  database:
+    type: sqlite
+    sqlite:
+      path: /tmp/unleash.db
