@@ -19,7 +19,6 @@ Toggles the beta message visibility in app response.
 
   environment {
     IMAGE_NAME = "my-microservice:latest"
-    UNLEASH_URL = "http://unleash-server:4242"
   }
 
   stages {
@@ -40,7 +39,7 @@ Toggles the beta message visibility in app response.
 
           withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
             sh """
-              curl -X POST ${UNLEASH_URL}/api/admin/projects/default/features/show-beta-banner/environments/development/${action} \\
+              curl -X POST http://localhost:4242/api/admin/projects/default/features/show-beta-banner/environments/development/${action} \\
                 -H "Authorization: Bearer \$UNLEASH_ADMIN_TOKEN" \\
                 -H "Content-Type: application/json"
             """
@@ -151,7 +150,7 @@ Toggles the beta message visibility in app response.
 
           withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
             sh '''
-              curl -s ${UNLEASH_URL}/api/admin/projects/default/features \
+              curl -s http://localhost:4242/api/admin/projects/default/features \
                 -H "Authorization: Bearer $UNLEASH_ADMIN_TOKEN" \
                 -H "Content-Type: application/json" > unleash-flags.json
 
