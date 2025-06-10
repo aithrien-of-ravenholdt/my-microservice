@@ -19,6 +19,7 @@ Toggles the beta message visibility in app response.
 
   environment {
     IMAGE_NAME = "my-microservice:latest"
+    UNLEASH_URL = "http://unleash-server:4242"
   }
 
   stages {
@@ -39,7 +40,7 @@ Toggles the beta message visibility in app response.
 
           withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
             sh """
-              curl -X POST http://localhost:4242/api/admin/projects/default/features/show-beta-banner/environments/development/${action} \\
+              curl -X POST ${UNLEASH_URL}/api/admin/projects/default/features/show-beta-banner/environments/development/${action} \\
                 -H "Authorization: Bearer \$UNLEASH_ADMIN_TOKEN" \\
                 -H "Content-Type: application/json"
             """
@@ -150,7 +151,7 @@ Toggles the beta message visibility in app response.
 
           withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
             sh '''
-              curl -s http://localhost:4242/api/admin/projects/default/features \
+              curl -s ${UNLEASH_URL}/api/admin/projects/default/features \
                 -H "Authorization: Bearer $UNLEASH_ADMIN_TOKEN" \
                 -H "Content-Type: application/json" > unleash-flags.json
 
@@ -200,13 +201,18 @@ Toggles the beta message visibility in app response.
         '''
         archiveArtifacts artifacts: 'rendered-output.html', fingerprint: true
       }
-    }  
+    }
   }
 
-  // Cleanup hook
   post {
     always {
-      sh 'docker stop microservice || true'
+      sh 'pkill -f "kubectl port-forward" || true'
+    }
+    success {
+      echo "✅ Pipeline completed successfully"
+    }
+    failure {
+      echo "❌ Pipeline failed"
     }
   }
 }

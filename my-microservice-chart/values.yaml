@@ -10,8 +10,8 @@ nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
-  create: true
-  automount: true
+  create: false
+  automount: false
   annotations: {}
   name: ""
 
@@ -47,13 +47,7 @@ env:
   RATE_LIMIT_WINDOW_MS: "900000"  # 15 minutes
   RATE_LIMIT_MAX: "100"
 
-resources:
-  requests:
-    cpu: 100m
-    memory: 128Mi
-  limits:
-    cpu: 500m
-    memory: 256Mi
+resources: {}
 
 livenessProbe:
   httpGet:
@@ -61,8 +55,6 @@ livenessProbe:
     port: http
   initialDelaySeconds: 3
   periodSeconds: 5
-  timeoutSeconds: 3
-  failureThreshold: 3
 
 readinessProbe:
   httpGet:
@@ -70,8 +62,6 @@ readinessProbe:
     port: http
   initialDelaySeconds: 3
   periodSeconds: 5
-  timeoutSeconds: 3
-  failureThreshold: 3
 
 autoscaling:
   enabled: false
@@ -84,4 +74,4 @@ volumeMounts: []
 
 nodeSelector: {}
 tolerations: []
-affinity: {}
+affinity: {} 
