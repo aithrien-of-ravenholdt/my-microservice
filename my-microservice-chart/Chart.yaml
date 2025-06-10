@@ -1,6 +1,6 @@
 apiVersion: v2
 name: my-microservice-chart
-description: A Helm chart for deploying a CI/CD-ready Node.js microservice
+description: A Helm chart for my-microservice
 type: application
 version: 0.1.0
 appVersion: "1.0.0"

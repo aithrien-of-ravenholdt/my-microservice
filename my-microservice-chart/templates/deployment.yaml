@@ -5,9 +5,7 @@ metadata:
   labels:
     {{- include "my-microservice-chart.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
       {{- include "my-microservice-chart.selectorLabels" . | nindent 6 }}
@@ -47,11 +45,6 @@ spec:
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
-            - name: UNLEASH_API_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: unleash-api-token
-                  key: token
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
