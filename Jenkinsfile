@@ -205,9 +205,7 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
               --from-literal=token="${UNLEASH_API_TOKEN}" \
               --dry-run=client -o yaml | kubectl apply -f -
             
-            # Add Unleash repo using the official repository
-            helm repo add unleash https://unleash.github.io/helm-charts/
-            helm repo update
+            # Build dependencies using local chart
             helm dependency build
             helm upgrade --install my-microservice . --set unleash.url=http://unleash-server.unleash.svc.cluster.local:4242/api/
           '''

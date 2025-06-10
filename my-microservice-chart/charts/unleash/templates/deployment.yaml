@@ -1,0 +1,177 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "unleash.fullname" . }}
+  labels:
+    {{- include "unleash.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "unleash.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{-  range $key, $value := .Values.podAnnotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      labels:
+        {{- include "unleash.selectorLabels" . | nindent 8 }}
+        {{-  range $key, $value := .Values.podLabels }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "unleash.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+            {{- if or (.Values.dbConfig.useExistingSecret.name) (.Values.postgresql.enabled) }}
+            - name: POSTGRESQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.dbConfig.useExistingSecret.name }}{{ .Values.dbConfig.useExistingSecret.name }}{{ else }}{{ .Values.postgresql.fullnameOverride }}{{ end }}
+                  key: {{ if .Values.dbConfig.useExistingSecret.key }}{{ .Values.dbConfig.useExistingSecret.key }}{{ else }}password{{ end }}
+            {{- end }}
+            - name: DATABASE_NAME
+              value: "{{ .Values.dbConfig.database }}"
+            - name: DATABASE_HOST
+              value: "{{ if .Values.postgresql.enabled }}{{ .Values.postgresql.fullnameOverride }}{{ else }}{{ .Values.dbConfig.host }}{{ end }}"
+            - name: DATABASE_PASSWORD
+              value: "{{ if or (.Values.dbConfig.useExistingSecret.name) (.Values.postgresql.enabled) }}$(POSTGRESQL_PASSWORD){{ else }}{{ .Values.dbConfig.pass }}{{ end }}"
+            - name: DATABASE_PORT
+              value: "{{ .Values.dbConfig.port }}"
+            - name: DATABASE_USERNAME
+              value: "{{ .Values.dbConfig.user }}"
+            {{- if .Values.dbConfig.ssl }}
+            - name: DATABASE_SSL
+              value: {{ .Values.dbConfig.ssl | toJson | quote }}
+            {{- else if .Values.postgresql.enabled }}
+            - name: DATABASE_SSL
+              value: "false"
+            {{- end }}
+            {{- if .Values.dbConfig.schema }}
+            - name: DATABASE_SCHEMA
+              value: "{{ .Values.dbConfig.schema }}"
+            {{- end }}
+            {{- if .Values.dbConfig.sslConfigFile }}
+            - name: DATABASE_SSL_CA_CONFIG
+              value: "{{ .Values.dbConfig.sslConfigFile }}"
+            {{- end }}
+            {{- if .Values.dbConfig.sslCaFile }}
+            - name: DATABASE_SSL_CA_FILE
+              value: "{{ .Values.dbConfig.sslCaFile }}"
+            {{- end }}
+            {{- if .Values.dbConfig.sslKeyFile }}
+            - name: DATABASE_SSL_KEY_FILE
+              value: "{{ .Values.dbConfig.sslKeyFile }}"
+            {{- end }}
+            {{- if .Values.dbConfig.sslCertFile }}
+            - name: DATABASE_SSL_CERT_FILE
+              value: "{{ .Values.dbConfig.sslCertFile }}"
+            {{- end }}
+            {{- if .Values.dbConfig.sslRejectUnauthorized }}
+            - name: DATABASE_SSL_REJECT_UNAUTHORIZED
+              value: "{{ .Values.dbConfig.sslRejectUnauthorizaed }}"
+            {{- end }}
+            {{- if .Values.env }}
+            {{- toYaml .Values.env | nindent 12 }}
+            {{- end }}
+            {{- if .Values.secrets }}
+            {{- range $key, $value := .Values.secrets }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "unleash.fullname" $ }}
+                  key: {{ $key }}
+            {{- end }}
+            {{- end }}
+            {{ if .Values.existingSecrets}}
+            {{- range .Values.existingSecrets }}
+            - name: {{ .name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .valueFrom.secretKeyRef.name }}
+                  key: {{ .valueFrom.secretKeyRef.key }}
+            {{- end }}
+            {{- end }}
+          image: "{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.containerPort }}
+              protocol: TCP
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livenessProbe.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.configMaps }}
+          volumeMounts:
+            {{-  range $key, $value := .Values.configMaps }}
+            - name: config-dir
+              mountPath: {{ .mountPath }}
+              subPath: {{ $key }}
+            {{- end }}
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+        {{- if and .Values.cloudsql .Values.cloudsql.enabled  }}
+        - name: cloudsql-proxy
+          image: {{ .Values.cloudsql.image.repository }}:{{ .Values.cloudsql.image.tag }}
+          imagePullPolicy: {{ .Values.cloudsql.image.pullPolicy }}
+          securityContext:
+            runAsNonRoot: true
+          command: [ "/cloud_sql_proxy" ]
+          args:
+            - "-instances={{ .Values.cloudsql.instance }}=tcp:{{ .Values.dbConfig.port }}"
+            {{- with .Values.cloudsql.flags }}
+            {{- range . }}
+            - {{ . }}
+            {{- end }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.cloudsql.resources | nindent 12 }}
+          {{- end }}
+      {{- with .Values.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.configMaps }}
+      volumes:
+        - name: config-dir
+          configMap:
+            name: {{ include "unleash.fullname" . }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{ toYaml . | nindent 8 }}
+      {{- end }}        
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
