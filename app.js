@@ -44,7 +44,7 @@ let unleash;
 try {
   const { initialize } = require('unleash-client');
   unleash = initialize({
-    url: process.env.UNLEASH_URL || 'http://unleash-server:4242/api/',
+    url: process.env.UNLEASH_URL,
     appName: process.env.UNLEASH_APP_NAME || 'cicd-lab-app',
     environment: process.env.NODE_ENV || 'development',
     refreshInterval: parseInt(process.env.UNLEASH_REFRESH_INTERVAL) || 2,
