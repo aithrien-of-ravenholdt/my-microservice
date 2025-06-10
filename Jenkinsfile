@@ -32,7 +32,7 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
 
   environment {
     IMAGE_NAME = "my-microservice:latest"
-    UNLEASH_URL = "http://unleash-server:4242"
+    UNLEASH_URL = "http://localhost:4242"
     K8S_SERVICE_NAME = "my-microservice-my-microservice-chart"
     FORWARD_PORT = "8888"
     APP_PORT = "3000"
@@ -56,7 +56,7 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
           
           withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_ADMIN_TOKEN')]) {
             sh '''
-              curl -X POST http://unleash-server:4242/api/admin/projects/default/features/show-beta-banner/environments/development/${action} \
+              curl -X POST http://localhost:4242/api/admin/projects/default/features/show-beta-banner/environments/development/${action} \
                 -H "Authorization: Bearer ${UNLEASH_ADMIN_TOKEN}" \
                 -H "Content-Type: application/json"
             '''
