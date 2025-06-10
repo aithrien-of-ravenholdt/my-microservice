@@ -77,7 +77,10 @@ try {
 app.get('/', (req, res) => {
   const context = { 
     userId: 'ci-cd-lab',
-    groupId: 'show-beta-banner'  // Add groupId to match Unleash configuration
+    groupId: 'show-beta-banner',  // Match the groupId from Unleash configuration
+    properties: {
+      groupId: 'show-beta-banner'  // Also add it to properties for flexibleRollout strategy
+    }
   };
   let betaEnabled = false;
 
