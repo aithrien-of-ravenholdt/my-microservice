@@ -13,4 +13,4 @@ annotations:
 dependencies:
   - name: unleash
     version: "5.0.0"
-    repository: https://charts.unleash.io/
+    repository: https://github.com/Unleash/unleash/releases/download/v5.0.0
