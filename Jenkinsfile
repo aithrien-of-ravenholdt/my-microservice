@@ -198,7 +198,11 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
         echo 'Deploying with Helm...'
         withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_API_TOKEN')]) {
           sh '''
+            pwd
+            ls -la
             cd my-microservice-chart
+            pwd
+            ls -la
             
             # Create Kubernetes secret with Unleash token
             kubectl create secret generic unleash-api-token \
