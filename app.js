@@ -39,42 +39,38 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Initialize Unleash SDK only in production
+// Initialize Unleash SDK
 let unleash;
-if (process.env.NODE_ENV === 'production') {
-  try {
-    const { initialize } = require('unleash-client');
-    unleash = initialize({
-      url: process.env.UNLEASH_URL || 'http://unleash-server:4242/api/',
-      appName: process.env.UNLEASH_APP_NAME || 'cicd-lab-app',
-      environment: process.env.NODE_ENV || 'development',
-      refreshInterval: parseInt(process.env.UNLEASH_REFRESH_INTERVAL) || 2,
-      customHeaders: {
-        Authorization: process.env.UNLEASH_API_TOKEN,
-      },
-    });
+try {
+  const { initialize } = require('unleash-client');
+  unleash = initialize({
+    url: process.env.UNLEASH_URL || 'http://unleash-server:4242/api/',
+    appName: process.env.UNLEASH_APP_NAME || 'cicd-lab-app',
+    environment: process.env.NODE_ENV || 'development',
+    refreshInterval: parseInt(process.env.UNLEASH_REFRESH_INTERVAL) || 2,
+    customHeaders: {
+      Authorization: process.env.UNLEASH_API_TOKEN,
+    },
+  });
 
-    // Log when Unleash SDK is ready and fetch initial toggles
-    unleash.on('ready', async () => {
-      logger.info('✅ Unleash is ready');
-      try {
-        await unleash.repository.fetch();
-        logger.info('🔄 Flags fetched on boot');
-      } catch (error) {
-        logger.error('Failed to fetch initial flags:', error);
-      }
-    });
+  // Log when Unleash SDK is ready and fetch initial toggles
+  unleash.on('ready', async () => {
+    logger.info('✅ Unleash is ready');
+    try {
+      await unleash.repository.fetch();
+      logger.info('🔄 Flags fetched on boot');
+    } catch (error) {
+      logger.error('Failed to fetch initial flags:', error);
+    }
+  });
 
-    // Log Unleash client-side errors
-    unleash.on('error', (err) => {
-      logger.error('❌ Unleash error:', err);
-    });
-  } catch (error) {
-    logger.error('Failed to initialize Unleash:', error);
-    process.exit(1);
-  }
-} else {
-  logger.info('Running in development mode without Unleash');
+  // Log Unleash client-side errors
+  unleash.on('error', (err) => {
+    logger.error('❌ Unleash error:', err);
+  });
+} catch (error) {
+  logger.error('Failed to initialize Unleash:', error);
+  process.exit(1);
 }
 
 // Root route with flag-controlled message
@@ -82,10 +78,10 @@ app.get('/', (req, res) => {
   const context = { userId: 'ci-cd-lab' };
   let betaEnabled = false;
 
-  if (process.env.NODE_ENV === 'production' && unleash) {
+  if (unleash) {
     betaEnabled = unleash.isEnabled('show-beta-banner', context);
   } else {
-    // In development, use environment variable
+    // Fallback to environment variable if Unleash is not available
     betaEnabled = process.env.BETA_BANNER_ENABLED === 'true';
   }
 
