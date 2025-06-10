@@ -37,6 +37,9 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     K8S_SERVICE_NAME = "my-microservice-my-microservice-chart"
     FORWARD_PORT = "8888"
     APP_PORT = "3000"
+    DOCKER_IMAGE = 'gabrielcantero/my-microservice'
+    DOCKER_TAG = "${BUILD_NUMBER}"
+    KUBE_CONFIG = credentials('kubeconfig')
   }
 
   stages {
@@ -45,7 +48,8 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
       steps {
         // Clean workspace before checkout
         cleanWs()
-        // Checkout with clean
+        
+        // Detailed checkout with clean options
         checkout([
           $class: 'GitSCM',
           branches: [[name: '*/main']],
@@ -128,7 +132,7 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     // Build container image
     stage('Build Docker Image') {
       steps {
-        sh 'docker build -t $IMAGE_NAME .'
+        sh 'docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .'
       }
     }
     
@@ -164,12 +168,12 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     stage('Docker Login') {
       steps {
         withCredentials([usernamePassword(
-          credentialsId: 'dockerhub-creds',
+          credentialsId: 'dockerhub',
           usernameVariable: 'DOCKER_USER',
           passwordVariable: 'DOCKER_PASS'
         )]) {
           sh '''
-            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
           '''
         }
       }
@@ -179,13 +183,13 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
     stage('Tag & Push Docker Image') {
       steps {
         withCredentials([usernamePassword(
-          credentialsId: 'dockerhub-creds',
+          credentialsId: 'dockerhub',
           usernameVariable: 'DOCKER_USER',
           passwordVariable: 'DOCKER_PASS'
         )]) {
           sh '''
-            docker tag my-microservice:latest "$DOCKER_USER/my-microservice:latest"
-            docker push "$DOCKER_USER/my-microservice:latest"
+            docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} "$DOCKER_USER/${DOCKER_IMAGE}:${DOCKER_TAG}"
+            docker push "$DOCKER_USER/${DOCKER_IMAGE}:${DOCKER_TAG}"
           '''
         }
       }
@@ -211,20 +215,22 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
         echo 'Deploying with Helm...'
         withCredentials([string(credentialsId: 'unleash-admin-token', variable: 'UNLEASH_API_TOKEN')]) {
           sh '''
-            cd my-microservice-chart
+            echo "=== Current directory ==="
+            pwd
             
-            # Debug: List all files
             echo "=== Listing all files in chart directory ==="
+            cd my-microservice-chart
             find . -type f
             
-            # Create Kubernetes secret with Unleash token
-            kubectl create secret generic unleash-api-token \
-              --from-literal=token="${UNLEASH_API_TOKEN}" \
-              --dry-run=client -o yaml | kubectl apply -f -
-            
-            # Build dependencies using local chart
+            echo "=== Building dependencies ==="
             helm dependency build
-            helm upgrade --install my-microservice . --set unleash.url=http://unleash-server.unleash.svc.cluster.local:4242/api/
+            
+            echo "=== Installing/Upgrading release ==="
+            helm upgrade --install my-microservice . \
+                --set image.tag=${DOCKER_TAG} \
+                --set unleash.apiToken=${UNLEASH_API_TOKEN} \
+                --namespace default \
+                --create-namespace
           '''
         }
       }
