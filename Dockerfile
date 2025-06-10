@@ -1,44 +1,24 @@
-# Build stage
-FROM node:18-alpine AS builder
+# Base image
+FROM node:18
 
-# Set working directory
+# Metadata
+LABEL maintainer="Gabriel Cantero"
+LABEL description="CI/CD-ready Node.js microservice"
+
+# Working directory
 WORKDIR /app
 
-# Copy package files
+# Dependency installation
 COPY package*.json ./
+RUN npm install
 
-# Install dependencies
-RUN npm ci
-
-# Copy source code
+# Copy source
 COPY . .
 
-# Production stage
-FROM node:18-alpine
-
-# Create non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
-# Set working directory
-WORKDIR /app
-
-# Copy package files and install production dependencies
-COPY package*.json ./
-RUN npm ci --only=production
-
-# Copy built application from builder stage
-COPY --from=builder /app/app.js ./
-
-# Set environment variables
-ENV NODE_ENV=production
+# Set environment port
 ENV PORT=3000
-
-# Switch to non-root user
-USER appuser
-
-# Expose port
 EXPOSE 3000
 
 # Start app
-CMD ["node", "app.js"]
+CMD ["npm", "start"]
  
