@@ -205,8 +205,8 @@ Note: This is a deployment-time configuration change, not a runtime feature flag
               --from-literal=token="${UNLEASH_API_TOKEN}" \
               --dry-run=client -o yaml | kubectl apply -f -
             
-            # Add Unleash repo with direct GitHub URL and use local DNS
-            helm repo add unleash https://raw.githubusercontent.com/Unleash/helm-charts/main/
+            # Add Unleash repo using the official repository
+            helm repo add unleash https://charts.unleash.io/
             helm repo update
             helm dependency build
             helm upgrade --install my-microservice . --set unleash.url=http://unleash-server.unleash.svc.cluster.local:4242/api/
