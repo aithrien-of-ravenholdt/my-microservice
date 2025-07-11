@@ -9,13 +9,13 @@
   </a>
 </p>
 
-# 🚀 CI/CD Pipeline Portfolio — Docker, Jenkins & Helm
+# CI/CD Pipeline Portfolio — Docker, Jenkins & Helm
 
 This project demonstrates a complete, production-grade CI/CD pipeline built with open-source tools to support the lifecycle of a Node.js microservice — from build and test to containerization, deployment, and automatic rollback.
 
 ---
 
-## 🗂️ Stack Used
+## Stack Used
 
 - **Node.js** – Sample microservice
 - **ESLint** – Code linting with artifact output
@@ -31,7 +31,7 @@ This project demonstrates a complete, production-grade CI/CD pipeline built with
 
 ---
 
-## 📦 What This Pipeline Does
+## What This Pipeline Does
 
 1. **Checks out code** from a GitHub repo
 2. **Lints source files** using ESLint and archives a report
@@ -49,7 +49,7 @@ This project demonstrates a complete, production-grade CI/CD pipeline built with
 
 ---
 
-## 🧹 ESLint Quality Gate and Reporting
+## ESLint Quality Gate and Reporting
 
 ESLint is configured in the project using the modern `eslint.config.mjs` format. It checks for syntax errors and basic best practices before test or build stages run.
 
@@ -59,7 +59,7 @@ ESLint is configured in the project using the modern `eslint.config.mjs` format.
 
 ---
 
-### 🔁 Failure Case Simulation: ESLint
+### Failure Case Simulation: ESLint
 
 To test ESLint’s enforcement and artifact reporting, you can introduce a deliberate lint error such as:
 
@@ -80,7 +80,7 @@ This simulates:
 
 ---
 
-## 🧪 Jest Test Coverage and Trend Reporting
+## Jest Test Coverage and Trend Reporting
 
 Jest is integrated with JUnit output so Jenkins can track and trend test outcomes using native JUnit plugin support.
 
@@ -90,7 +90,7 @@ Jest is integrated with JUnit output so Jenkins can track and trend test outcome
 
 ---
 
-### 🔁 Failure Case Simulation: Jest
+### Failure Case Simulation: Jest
 
 To validate Jenkins’ test trend and result reporting, you can intentionally trigger a test failure by modifying a test like this:
 
@@ -105,30 +105,10 @@ Because the test stage uses `|| true`, the pipeline continues execution without 
 This demonstrates:
 - CI visibility for test failures
 - Non-blocking test trends for quality insight
-
----
-
-## 🚩 Unleash Deployment-Time Configuration
-
-This lab integrates **Unleash** as a runtime feature flag manager, while also demonstrating a deployment-time configuration change using `BETA_BANNER_ENABLED`.
-
-- The Node.js app uses the Unleash Node SDK to **dynamically** toggle runtime features (no redeploy needed).
-- In this pipeline, we showcase a **deployment-time config change**: the beta banner toggle (`BETA_BANNER_ENABLED`), controlled via Jenkins pipeline parameters.
-- Jenkins authenticates via an admin API token to update the Unleash config for the `show-beta-banner` toggle **at deployment time**.
-- The app **reads this config at boot**, showing or hiding the beta banner accordingly.
-
-Jenkins captures the final output by:
-- Calling `curl http://localhost:8888` after deployment
-- Saving the rendered HTML response to `rendered-output.html`
-- Archiving it for visual inspection in the Jenkins UI
-
-This demonstrates:
-- Controlled deployment-time configuration changes (like beta banners) managed via the pipeline
-- Real runtime toggling happens inside the app itself using Unleash
  
 ---
 
-## 🐳 DockerHub Integration
+## DockerHub Integration
 
 An automated stage was added to push Docker images to DockerHub from Jenkins using securely stored credentials. This step includes:
 
@@ -142,7 +122,7 @@ https://hub.docker.com/r/aithrien/my-microservice
 
 ---
 
-## 🛡️ Trivy Image Scan and Reporting
+## Trivy Image Scan and Reporting
 
 Trivy is integrated into the pipeline to **scan Docker images** for known vulnerabilities in base images and application dependencies.
 
@@ -160,7 +140,7 @@ This demonstrates:
  
 ---
 
-## ⚙️ Health Check Strategy
+## Health Check Strategy
 
 The pipeline uses:
 
@@ -173,7 +153,7 @@ If the response is anything other than `200`, the deployment is considered unhea
 
 ---
 
-## 🔁 Rollback Simulation
+## Rollback Simulation
 
 A failure scenario is simulated using a failing Jest test to validate CI behavior. This triggers Jenkins to report a failed test result while continuing execution of the remaining stages.
  
@@ -185,7 +165,7 @@ helm rollback my-microservice <revision>
 
 ---
 
-## ✅ Final State
+## Final State
 
 - Jenkins securely connects to Minikube using a configured `.kube/config` and TLS certificates
 - The CI/CD pipeline **builds, lints, tests, scans for vulnerabilities, pushes and deploys** automatically
@@ -196,4 +176,4 @@ helm rollback my-microservice <revision>
 
 ---
 
-🛠️ **Created and maintained by Gabriel Cantero**
+**Created and maintained by Gabriel Cantero**
