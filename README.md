@@ -18,24 +18,24 @@ The real focus of this lab is not the app itself, but the automated infrastructu
 
 ```
 my-microservice/
-├── app.js                 # Main application file
-├── Dockerfile            # Multi-stage Docker build
-├── package.json          # Node.js dependencies and scripts
-├── package-lock.json     # Locked dependencies
-├── test/                 # Jest test files
+├── app.js                   # Main application file
+├── Dockerfile               # Multi-stage Docker build
+├── package.json             # Node.js dependencies and scripts
+├── package-lock.json        # Locked dependencies
+├── test/                    # Jest test files
 │   └── hello.test.js
-├── test-results/         # Test output in JUnit format
+├── test-results/            # Test output in JUnit format
 │   └── junit.xml
-├── my-microservice-chart/ # Helm chart for Kubernetes deployment
-│   ├── Chart.yaml        # Chart metadata and dependencies
-│   ├── values.yaml       # Configurable values
-│   └── templates/        # Kubernetes manifests
+├── my-microservice-chart/   # Helm chart for Kubernetes deployment
+│   ├── Chart.yaml           # Chart metadata and dependencies
+│   ├── values.yaml          # Configurable values
+│   └── templates/           # Kubernetes manifests
 │       ├── deployment.yaml
 │       ├── service.yaml
 │       ├── ingress.yaml
 │       └── hpa.yaml
-├── eslint.config.mjs     # ESLint configuration
-└── Jenkinsfile          # CI/CD pipeline definition
+├── eslint.config.mjs        # ESLint configuration
+└── Jenkinsfile              # CI/CD pipeline definition
 ```
 
 ---
