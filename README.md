@@ -1,4 +1,4 @@
-# 🧪 my-microservice — Release Engineering Lab
+# my-microservice — Release Engineering Lab
 
 <p align="center">
   <img src="https://img.shields.io/badge/Jenkins-CI%2FCD-red?logo=jenkins&logoColor=white" />
@@ -10,13 +10,11 @@
 
 This project is a complete, hands-on CI/CD lab, built to simulate a real-world DevOps and release pipeline lifecycle, from building and testing a Node.js microservice to containerizing it with Docker and deploying to Kubernetes using Helm.
  
-📝 While originally inspired by a standard Express template, the application logic was fully rewritten and restructured to serve as a clean, integration-friendly foundation for advanced CI/CD tooling. There is no inherited logic or boilerplate from the original source.
- 
 The real focus of this lab is not the app itself, but the automated infrastructure surrounding it, including Jenkins pipelines, DockerHub integration, test and lint quality gates, Helm deployments, rollback automation, and Kubernetes-based health checks.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 my-microservice/
@@ -42,7 +40,7 @@ my-microservice/
 
 ---
 
-## 🚀 Prerequisites
+## Prerequisites
 
 ### System Requirements
 - Ubuntu 24.04 or similar Linux distribution
@@ -119,9 +117,9 @@ my-microservice/
 
 ---
 
-## ✅ Step-by-Step Guide
+## Step-by-Step Guide
 
-### 🔧 Part 1: Project Setup
+### Part 1: Project Setup
 
 1. Clone the repository:
    ```bash
@@ -147,7 +145,7 @@ my-microservice/
 
 ---
 
-### 🛠️ Part 2: Jenkins Pipeline
+### Part 2: Jenkins Pipeline
 
 The `Jenkinsfile` defines a complete CI/CD pipeline with the following stages:
 
@@ -250,7 +248,7 @@ The `Jenkinsfile` defines a complete CI/CD pipeline with the following stages:
 
 ---
 
-### ☸️ Part 3: Kubernetes Deployment
+### Part 3: Kubernetes Deployment
 
 #### 3A. Local Cluster Setup
 ```bash
@@ -293,7 +291,7 @@ kubectl port-forward svc/my-microservice 3000:3000
 
 ---
 
-### 🐳 Part 4: DockerHub Publishing
+### Part 4: DockerHub Publishing
 
 1. Create DockerHub account and repository
 2. Add DockerHub credentials to Jenkins
@@ -310,7 +308,7 @@ kubectl port-forward svc/my-microservice 3000:3000
 
 ---
 
-### 🧪 Part 5: Jest Integration
+### Part 5: Jest Integration
 
 1. Install Jest + jest-junit:
    ```bash
@@ -339,7 +337,7 @@ kubectl port-forward svc/my-microservice 3000:3000
 
 ---
 
-### 📦 Part 6: ESLint Integration
+### Part 6: ESLint Integration
 
 1. Install ESLint:
    ```bash
@@ -378,7 +376,7 @@ kubectl port-forward svc/my-microservice 3000:3000
 
 ---
 
-### 🚩 Part 7: Unleash Integration
+### Part 7: Unleash Integration
 
 This lab integrates **Unleash** as a runtime feature flag manager, while also demonstrating a deployment-time configuration change using the `BETA_BANNER_ENABLED` parameter.
 
@@ -448,12 +446,12 @@ Welcome to the CI/CD Release Engineering Lab 🚀
 
 When `BETA_BANNER_ENABLED` is set to `off`, the second line is hidden.
 
-> ⚠️ **Note:** In production, toggling feature flags would be done dynamically at runtime using Unleash (no redeploy required). 
+> **Note:** In production, toggling feature flags would be done dynamically at runtime using Unleash (no redeploy required). 
 > Here, we demonstrate a deploy-time configuration change for clarity and to showcase Jenkins pipeline flexibility.
 
 ---
 
-### 🛡️ Part 8: Container Image Scanning with Trivy
+### Part 8: Container Image Scanning with Trivy
 
 This lab integrates **Trivy**, an open-source security scanner for Docker images.  
 It ensures your container images don't contain known vulnerabilities, demonstrating supply chain security in your pipeline.
@@ -501,12 +499,12 @@ stage('Trivy Scan') {
 - After the pipeline runs, the **`trivy-report.json`** file is available as a Jenkins artifact.
 - It contains a full list of detected vulnerabilities, severity, and impacted packages.
 
-> ⚠️ **Note:** In this lab, `--exit-code 0` allows the pipeline to continue while still archiving the security report for review.  
+> **Note:** In this lab, `--exit-code 0` allows the pipeline to continue while still archiving the security report for review.  
 > In production, it's recommended to use `--exit-code 1` to fail the pipeline if HIGH or CRITICAL vulnerabilities are found.
 
 ---
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -532,7 +530,7 @@ stage('Trivy Scan') {
 
 ---
 
-## 📚 Additional Resources
+## Additional Resources
 
 - [Jenkins Pipeline Documentation](https://www.jenkins.io/doc/book/pipeline/)
 - [Helm Documentation](https://helm.sh/docs/)
@@ -542,8 +540,4 @@ stage('Trivy Scan') {
 
 ---
 
-## 📈 Next Steps / Portfolio Extensions
-  
-See [PORTFOLIO.md](./PORTFOLIO.md) for the full roadmap, upcoming tooling, and release engineering enhancements.
-
-🛠️ **Created and maintained by Gabriel Cantero**
+**Created and maintained by Gabriel Cantero**
