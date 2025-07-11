@@ -1,5 +1,3 @@
-# my-microservice — Release Engineering Lab
-
 <p align="center">
   <img src="https://img.shields.io/badge/Jenkins-CI%2FCD-red?logo=jenkins&logoColor=white" />
   <img src="https://img.shields.io/badge/Docker-Container-blue?logo=docker&logoColor=white" />
@@ -7,6 +5,8 @@
   <img src="https://img.shields.io/badge/Helm-Package%20Manager-0F1689?logo=helm&logoColor=white" />
   <img src="https://img.shields.io/badge/Unleash-Feature%20Flags-orange?logo=unleash&logoColor=white" />
 </p>
+
+# my-microservice — Release Engineering Lab
 
 This project is a complete, hands-on CI/CD lab, built to simulate a real-world DevOps and release pipeline lifecycle, from building and testing a Node.js microservice to containerizing it with Docker and deploying to Kubernetes using Helm.
  
